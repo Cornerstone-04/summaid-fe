@@ -1,12 +1,14 @@
 import { RouterProvider } from "react-router";
 import { router } from "./router/routes";
-import { ThemeProvider } from "./components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const App = () => {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <>
+      <Toaster closeButton position="top-right" />
+
       <RouterProvider router={router} />
-    </ThemeProvider>
+    </>
   );
 };
 
