@@ -22,7 +22,7 @@ export const Header = () => {
           </h1>
         </div>
         <div className="flex items-center space-x-4">
-          <Link to="/dashboard">
+          <Link to="/auth/get-started">
             <Button className="text-sm font-semibold bg-[#0657E7] hover:bg-[#054ed0] text-white">
               Get Started
             </Button>

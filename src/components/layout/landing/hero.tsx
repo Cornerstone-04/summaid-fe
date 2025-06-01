@@ -64,7 +64,7 @@ export const Hero = () => {
         transition={{ delay: 0.9, duration: 0.6 }}
         className="flex flex-col sm:flex-row gap-4 items-center"
       >
-        <Link to="/dashboard">
+        <Link to="/auth/get-started">
           <Button
             size="lg"
             className="px-8 py-6 rounded-full text-base bg-[#0657E7] hover:bg-[#054ed0] text-white"

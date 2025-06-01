@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/landing/footer";
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300 scrollbar-thin scrollbar-thumb-[#0657E7] scrollbar-track-transparent">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
       {/* Background Blurs */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#0657E7]/30 rounded-full blur-3xl animate-pulse" />
