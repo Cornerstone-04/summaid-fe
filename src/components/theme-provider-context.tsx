@@ -7,7 +7,8 @@ export type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "light", // Default theme
+  // Default theme can be "light", "dark", or "system"
   setTheme: () => null,
 };
 
