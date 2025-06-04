@@ -4,6 +4,7 @@ import LandingPage from "@/pages/landing-page";
 import LoginPage from "@/pages/auth/login";
 import { ProtectedRoute } from "@/router/protected-routes";
 import { PublicRoute } from "./public-routes";
+import DashboardPage from "@/pages/dashboard/dashboard-page";
 
 export const router = createBrowserRouter([
   {
@@ -30,7 +31,7 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: (
           <ProtectedRoute>
-            <LandingPage />
+            <DashboardPage />
           </ProtectedRoute>
         ),
       },
