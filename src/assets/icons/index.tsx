@@ -1,3 +1,6 @@
+import FlashCard from "../flashcard.svg";
+import Microphone from "../mic.svg";
+import Note from "../note.svg";
 
 export const DarkMode = () => {
   return (
@@ -40,3 +43,5 @@ export const LightMode = () => {
     </svg>
   );
 };
+
+export { FlashCard, Note, Microphone };

@@ -114,8 +114,8 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
 
       {viewMode === "table" ? (
         <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
+          <Table className="rounded-2xl">
+            <TableHeader className="bg-[#FAFCFF]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (

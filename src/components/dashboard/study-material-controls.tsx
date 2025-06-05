@@ -24,7 +24,7 @@ export function StudyMaterialControls({
   onSortChange,
 }: StudyMaterialControlsProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
+    <div className="flex flex-row gap-4 justify-between items-start md:items-center mb-6">
       {/* Grid/Table Toggle */}
       <div className="relative flex w-fit rounded-full bg-muted overflow-hidden border border-border dark:border-gray-700">
         {/* Sliding highlight */}
