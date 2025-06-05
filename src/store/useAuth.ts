@@ -1,3 +1,4 @@
+// src/store/useAuth.ts
 import { create } from "zustand";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -17,9 +18,9 @@ export const useAuth = create<AuthState>((set) => ({
 }));
 
 export function listenToAuthChanges() {
-  useAuth.getState().setLoading(true);
+  useAuth.getState().setLoading(true); // <-- This line here
   onAuthStateChanged(auth, (user) => {
     useAuth.getState().setUser(user);
-    useAuth.getState().setLoading(false);
+    useAuth.getState().setLoading(false); // <-- This line here
   });
 }
