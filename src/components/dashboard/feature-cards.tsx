@@ -1,9 +1,13 @@
-import { FlashCard, Microphone, Note } from "@/assets/icons";
+import { FlashCard, Note } from "@/assets/icons";
 import { Card, CardContent } from "@/components/ui/card";
+import { PlusCircle } from "lucide-react";
 
 export function FeatureCards() {
   const features = [
-    { icon: <img src={Microphone} />, title: "Audio Recap" },
+    {
+      icon: <PlusCircle className="w-20 h-20 md:w-40 md:h-40 text-blue-500" />,
+      title: "Create Summary",
+    }, // Changed!
     {
       icon: <img src={FlashCard} />,
       title: "Study Flashcards",

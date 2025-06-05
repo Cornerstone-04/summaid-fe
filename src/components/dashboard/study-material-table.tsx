@@ -134,7 +134,7 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
               {table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  onClick={() => navigate(`/summary/${row.original.id}`)}
+                  onClick={() => navigate(`/session/${row.original.id}`)}
                   className="cursor-pointer hover:bg-accent"
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -156,7 +156,7 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
             <Card
               key={item.id}
               className="hover:shadow transition cursor-pointer"
-              onClick={() => navigate(`/summary/${item.id}`)}
+              onClick={() => navigate(`/session/${item.id}`)}
             >
               <CardContent className="p-4 space-y-2">
                 <div className="flex justify-between items-start">
