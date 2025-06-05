@@ -1,7 +1,12 @@
 [
   {
-    "origin": ["http://localhost:5173"],
-    "method": ["GET", "POST", "PUT", "DELETE"],
+    "origin": ["*"],
+    "method": ["GET", "PUT", "POST", "DELETE"],
+    "responseHeader": [
+      "Content-Type",
+      "Firebase-Storage-Resumable-Upload-Protocol",
+      "x-firebase-storage-upload-status"
+    ],
     "maxAgeSeconds": 3600
   }
 ]
