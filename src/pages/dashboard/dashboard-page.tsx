@@ -1,23 +1,36 @@
-import DashboardHeader from "@/components/layout/dashboard/dashboard-header";
-import FeatureGrid from "@/components/layout/dashboard/feature-grid";
-import MaterialsTable from "@/components/layout/dashboard/materials-table";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { FeatureCards } from "@/components/dashboard/feature-cards";
+import { StudyMaterialControls } from "@/components/dashboard/study-material-controls";
+import { StudyMaterialTable } from "@/components/dashboard/study-material-table";
+import { useState } from "react";
 
 export default function DashboardPage() {
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
+
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="relative flex flex-col min-h-screen bg-background text-foreground">
       <DashboardHeader />
 
-      <section className="px-6 py-10">
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Welcome back Cornerstone!
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Learn smarter with the power of AI ✨
-        </p>
-      </section>
+      <main className="flex-1 container mx-auto py-8 px-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Welcome back Cornerstone!</h1>
+          <p className="text-xl text-muted-foreground">
+            Learn smarter with the power of AI ✨
+          </p>
+        </div>
 
-      <FeatureGrid />
-      <MaterialsTable />
+        <FeatureCards />
+
+        <StudyMaterialControls
+          viewMode={viewMode}
+          onViewChange={setViewMode}
+          sort={sortBy}
+          onSortChange={setSortBy}
+        />
+
+        <StudyMaterialTable viewMode={viewMode} sortBy={sortBy} />
+      </main>
     </div>
   );
 }
