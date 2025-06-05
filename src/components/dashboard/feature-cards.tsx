@@ -5,7 +5,7 @@ import { PlusCircle } from "lucide-react";
 export function FeatureCards() {
   const features = [
     {
-      icon: <PlusCircle className="w-20 h-20 md:w-40 md:h-40 text-blue-500" />,
+      icon: <PlusCircle className="w-20 h-20 md:w-40 md:h-40 text-sa-primary" />,
       title: "Create Summary",
     }, // Changed!
     {
@@ -20,7 +20,7 @@ export function FeatureCards() {
       {features.map((item, idx) => (
         <Card
           key={idx}
-          className="hover:shadow-md transition-shadow cursor-pointer border-[3px] rounded-3xl hover:shadow-[#E4F1FB] min-h-[250px]"
+          className="hover:shadow-md transition-all cursor-pointer border-[3px] rounded-3xl hover:shadow-[#E4F1FB] min-h-[250px"
         >
           <CardContent className="p-6 flex flex-col items-center text-center">
             <div className="w-20 h-20 md:w-40 md:h-40 mb-4 flex items-center justify-center">

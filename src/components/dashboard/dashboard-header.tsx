@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router";
-import { RocketIcon, Search, LogOut } from "lucide-react";
+import { Brain, Search, LogOut } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ export function DashboardHeader() {
   const avatarFallbackLetter =
     user?.displayName?.charAt(0).toUpperCase() || "G";
 
+  console.log(user?.photoURL);
+
   const handleConfirmSignOut = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -44,9 +46,11 @@ export function DashboardHeader() {
           {/* Left: Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 text-blue-600 dark:text-blue-400"
+            className="flex items-center gap-2 text-sa-primary dark:text-blue-400"
           >
-            <RocketIcon className="w-5 h-5" />
+            <div className="w-8 h-8 bg-sa-primary rounded-lg flex items-center justify-center">
+              <Brain className="w-5 h-5 text-white" />
+            </div>
             <span className="text-lg font-bold">SummAid</span>
           </Link>
 
