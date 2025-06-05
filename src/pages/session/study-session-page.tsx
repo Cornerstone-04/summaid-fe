@@ -8,7 +8,13 @@ import { useEffect, useState } from "react";
 import { doc, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase"; // Your firestore instance
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Define the structure of a session document in Firestore
@@ -17,6 +23,12 @@ interface FileDetail {
   downloadURL: string;
   mimeType: string;
   storagePath: string;
+}
+
+// Define the structure for a Flashcard
+interface Flashcard {
+  question: string;
+  answer: string;
 }
 
 interface ChatMessage {
@@ -36,7 +48,7 @@ interface SessionData {
   createdAt: Timestamp; // Firebase Timestamp
   status: string;
   summary: string | null;
-  flashcards: unknown[]; // Define a more specific type later if needed
+  flashcards: Flashcard[]; // Define a more specific type later if needed
   studyGuide: string | null;
   chatHistory: ChatMessage[];
 }
@@ -96,7 +108,7 @@ export default function StudySessionPage() {
     const newChatMessage: ChatMessage = {
       role: "user",
       content: chatInput.trim(),
-      timestamp: new Date().toISOString(), // Use serverTimestamp() in real backend
+      timestamp: Timestamp.now(),
     };
 
     // Optimistically update UI (real implementation would wait for Cloud Function response)
@@ -184,7 +196,7 @@ export default function StudySessionPage() {
                       <p>{message.content}</p>
                       <span className="text-xs opacity-70 mt-1 block">
                         {message.role === "user" ? "You" : "AI"} at{" "}
-                        {new Date(message.timestamp).toLocaleTimeString()}
+                        {message.timestamp.toDate().toLocaleTimeString()}
                       </span>
                     </div>
                   ))
@@ -259,7 +271,7 @@ export default function StudySessionPage() {
                 {sessionData.flashcards && sessionData.flashcards.length > 0 ? (
                   <div className="space-y-4">
                     {sessionData.flashcards.map(
-                      (flashcard: any, index: number) => (
+                      (flashcard: Flashcard, index: number) => (
                         <Card key={index} className="p-4">
                           <p className="font-semibold">{flashcard.question}</p>
                           <p className="text-muted-foreground">
