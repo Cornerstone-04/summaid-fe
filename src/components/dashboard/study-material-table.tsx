@@ -115,11 +115,11 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
       {viewMode === "table" ? (
         <div className="rounded-md border overflow-x-auto">
           <Table className="rounded-2xl">
-            <TableHeader className="bg-[#FAFCFF] dark:bg-sa-primary">
+            <TableHeader className="bg-sa-primary">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-[#FAFCFF]!">
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()

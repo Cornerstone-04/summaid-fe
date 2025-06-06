@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@radix-ui/react-accordion";
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 export const FAQS = () => {
   const faqs = [
@@ -45,7 +46,7 @@ export const FAQS = () => {
         <h4 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-[#0657E7] to-blue-400 bg-clip-text text-transparent">
           Frequently Asked Questions
         </h4>
-        <div className="space-y-4">
+        <Accordion type="single" collapsible className="space-y-4">
           {faqs.map((faq, index) => (
             <motion.div
               key={faq.value}
@@ -54,27 +55,26 @@ export const FAQS = () => {
               transition={{ delay: index * 0.1, duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <Accordion type="single" collapsible>
-                <AccordionItem
-                  value={faq.value}
-                  className="backdrop-blur-xl bg-gradient-to-r from-background/80 to-background/40 border border-border/50 rounded-2xl px-6 py-2 hover:border-[#0657E7]/30 hover:shadow-lg hover:shadow-[#0657E7]/10 transition-all duration-300 group data-[state=open]:border-[#0657E7]/50 data-[state=open]:shadow-xl data-[state=open]:shadow-[#0657E7]/20"
-                >
-                  <AccordionTrigger className="cursor-pointer text-left hover:no-underline py-6 text-base font-medium group-hover:text-[#0657E7] transition-colors duration-200 [&[data-state=open]]:text-[#0657E7]">
-                    <span className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[#0657E7]/40 group-hover:bg-[#0657E7] group-data-[state=open]:bg-[#0657E7] transition-colors duration-200"></div>
-                      {faq.question}
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground leading-relaxed pb-6 pt-2 animate-in slide-in-from-top-2 duration-200">
-                    <div className="pl-5 border-l-2 border-[#0657E7]/20">
-                      {faq.answer}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <AccordionItem
+                value={faq.value}
+                className="backdrop-blur-xl bg-gradient-to-r from-background/80 to-background/40 border border-border/50 rounded-2xl px-6 py-2 hover:border-[#0657E7]/30 hover:shadow-lg hover:shadow-[#0657E7]/10 transition-all duration-300 group data-[state=open]:border-[#0657E7]/50 data-[state=open]:shadow-xl data-[state=open]:shadow-[#0657E7]/20"
+              >
+                <AccordionTrigger className="cursor-pointer text-left hover:no-underline py-6 text-base font-medium group-hover:text-[#0657E7] transition-colors duration-200 [&[data-state=open]]:text-[#0657E7] flex justify-between w-full">
+                  <span className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-[#0657E7]/40 group-hover:bg-[#0657E7] group-data-[state=open]:bg-[#0657E7] transition-colors duration-200"></div>
+                    {faq.question}
+                  </span>
+                  <ChevronDown className="transition-all duration-400 group-data-[state=open]:rotate-180" />
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-6 pt-2 animate-in slide-in-from-top-2 duration-200">
+                  <div className="pl-5 border-l-2 border-[#0657E7]/20">
+                    {faq.answer}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             </motion.div>
           ))}
-        </div>{" "}
+        </Accordion>
       </div>
     </section>
   );

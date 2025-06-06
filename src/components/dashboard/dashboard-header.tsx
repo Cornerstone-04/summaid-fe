@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Brain, Search, LogOut } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +25,7 @@ export function DashboardHeader() {
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const { signoutUser } = useSignout();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const firstName = user?.displayName?.split(" ")[0] || "Guest";
   const avatarFallbackLetter =
@@ -35,6 +36,7 @@ export function DashboardHeader() {
 
     await signoutUser();
     setShowSignOutDialog(false);
+    navigate("/");
   };
 
   return (

@@ -46,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         <h2 className="text-center text-lg font-semibold">
-          Welcome back <MdWavingHand className="text-sa-primary inline" />
+          Welcome  <MdWavingHand className="text-sa-primary inline" />
         </h2>
         <p className="text-center text-sm text-muted-foreground">
           Sign in to continue your learning journey.
