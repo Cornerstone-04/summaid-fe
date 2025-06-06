@@ -131,6 +131,12 @@
   button {
     cursor: pointer;
   }
+  button[role="switch"] {
+    @apply data-[state=checked]:bg-sa-primary!;
+  }
+  button[disabled]{
+    @apply cursor-not-allowed
+  }
 }
 
 @layer utilities {

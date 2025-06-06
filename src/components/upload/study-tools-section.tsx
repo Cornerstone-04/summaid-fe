@@ -1,16 +1,8 @@
-// src/components/upload/StudyToolsSection.tsx
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -26,8 +18,8 @@ interface StudyToolsSectionProps {
     generateStudyGuide: boolean;
     generateSummary: boolean;
   };
-  setPreferences: React.Dispatch<
-    React.SetStateAction<{
+  setPreferences: Dispatch<
+    SetStateAction<{
       generateFlashcards: boolean;
       generateStudyGuide: boolean;
       generateSummary: boolean;
@@ -114,47 +106,34 @@ export function StudyToolsSection({
 
   return (
     <Collapsible defaultOpen={true}>
-      <Card className="flex flex-col">
-        <CardHeader className="border-b border-border/50">
-          
+      <Card className="flex flex-col py-3.5! gap-3.5">
+        <CardHeader className="px-3.5!">
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full justify-between px-0 hover:bg-transparent"
+              className="w-full h-fit justify-between p-0 hover:bg-transparent"
             >
               <div className="flex items-center justify-between w-full word">
                 <div className="flex flex-col items-start">
-                  <CardTitle className="text-base sm:text-lg">
+                  <CardTitle className="text-base">
                     Study Tools Available
-                  </CardTitle>{" "}
-                  {/* Adjusted font size */}
-                  <CardDescription className="text-xs sm:text-sm text-balance text-start">
-                    {" "}
-                    {/* Adjusted font size */}
-                    Select AI tools to generate for this session based on your
-                    documents.
-                  </CardDescription>
+                  </CardTitle>
                 </div>
-                <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 transition-transform data-[state=open]:rotate-180" />{" "}
-                {/* Adjusted icon size */}
+                <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 transition-transform data-[state=open]:rotate-180" />
               </div>
             </Button>
           </CollapsibleTrigger>
         </CardHeader>
+        <hr className="mx-3.5" />
         <CollapsibleContent>
-          <CardContent className="flex-1 flex flex-col gap-4 sm:gap-5 p-3 sm:p-4">
-            {" "}
-            {/* Adjusted padding and gap */}
-            {/* Generate Summary */}
+          <CardContent className="flex-1 flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="summary-switch"
-                className="flex flex-col text-base"
+                className="flex flex-col text-sm items-start gap-1"
               >
                 Generate Summary
-                <span className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {" "}
-                  {/* Adjusted font size */}
+                <span className="text-muted-foreground mt-1">
                   Get a concise summary of your lecture content.
                 </span>
               </Label>
@@ -169,17 +148,14 @@ export function StudyToolsSection({
                 }
               />
             </div>
-            <Separator />
-            {/* Generate Flashcards */}
+
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="flashcards-switch"
-                className="flex flex-col text-base"
+                className="flex flex-col text-sm items-start gap-1"
               >
                 Generate Flashcards
-                <span className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {" "}
-                  {/* Adjusted font size */}
+                <span className="text-muted-foreground mt-1">
                   Create interactive flashcards from your content.
                 </span>
               </Label>
@@ -189,17 +165,14 @@ export function StudyToolsSection({
                 onCheckedChange={handleFlashcardsChange}
               />
             </div>
-            <Separator />
-            {/* Generate Study Guide */}
+
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="study-guide-switch"
-                className="flex flex-col text-base"
+                className="flex flex-col text-sm items-start gap-1"
               >
                 Generate Study Guide
-                <span className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {" "}
-                  {/* Adjusted font size */}
+                <span className="text-muted-foreground mt-1">
                   Get a structured study guide with key points.
                 </span>
               </Label>
@@ -208,22 +181,6 @@ export function StudyToolsSection({
                 checked={preferences.generateStudyGuide}
                 onCheckedChange={handleStudyGuideChange}
               />
-            </div>
-            <Separator />
-            {/* Enable Chatbot (Always on) */}
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="chatbot-switch"
-                className="flex flex-col text-base"
-              >
-                Enable Chatbot
-                <span className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {" "}
-                  {/* Adjusted font size */}
-                  Interact with AI for further learning and clarifications.
-                </span>
-              </Label>
-              <Switch id="chatbot-switch" checked={true} disabled />
             </div>
           </CardContent>
         </CollapsibleContent>

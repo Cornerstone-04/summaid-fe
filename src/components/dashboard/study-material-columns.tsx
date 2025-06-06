@@ -6,17 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Pencil, // Keep Pencil for the dropdown, though it's optional if you prefer just text
-  MoreVertical,
-  Trash2,
-  Mic,
-  FileText,
-  Book,
-} from "lucide-react";
+import { Pencil, MoreVertical, Trash2, FileText, Book } from "lucide-react";
 import { JSX } from "react";
 
-export type Category = "Audio Recap" | "Flashcard Set" | "Note Explain";
+export type Category = "Flashcard Set" | "Note Explain";
 
 export type StudyMaterial = {
   id: string;
@@ -26,8 +19,6 @@ export type StudyMaterial = {
 };
 
 const categoryStyles: Record<Category, string> = {
-  "Audio Recap":
-    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
   "Flashcard Set":
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
   "Note Explain":
@@ -35,14 +26,13 @@ const categoryStyles: Record<Category, string> = {
 };
 
 const icons: Record<Category, JSX.Element> = {
-  "Audio Recap": <Mic className="h-4 w-4" />,
   "Flashcard Set": <FileText className="h-4 w-4" />,
   "Note Explain": <Book className="h-4 w-4" />,
 };
 
 export const studyMaterialColumns = (
-  onEdit?: (material: StudyMaterial) => void, // onEdit function from parent
-  onDelete?: (material: StudyMaterial) => void // Add onDelete if you plan to handle delete via prop
+  onEdit?: (material: StudyMaterial) => void,
+  onDelete?: (material: StudyMaterial) => void
 ): ColumnDef<StudyMaterial>[] => [
   {
     accessorKey: "name",
@@ -80,15 +70,14 @@ export const studyMaterialColumns = (
       return (
         <div
           className="flex justify-end gap-2"
-          onClick={(e) => e.stopPropagation()} // Crucial: Stop click from bubbling to TableRow
+          onClick={(e) => e.stopPropagation()}
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              {/* Ensure dropdown trigger also stops propagation if it's separate */}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={(e) => e.stopPropagation()} // Stop click from propagating further than the button
+                onClick={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -97,7 +86,7 @@ export const studyMaterialColumns = (
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={(e) => {
-                  e.stopPropagation(); // Stop click from propagating out of the dropdown item
+                  e.stopPropagation();
                   onEdit?.(material);
                 }}
               >
@@ -107,8 +96,8 @@ export const studyMaterialColumns = (
               <DropdownMenuItem
                 className="cursor-pointer text-red-500"
                 onClick={(e) => {
-                  e.stopPropagation(); // Stop click from propagating out of the dropdown item
-                  onDelete?.(material); // Call onDelete
+                  e.stopPropagation();
+                  onDelete?.(material);
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />

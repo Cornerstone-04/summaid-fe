@@ -134,11 +134,7 @@ export default function UploadPage() {
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
       <DashboardHeader />
       <main className="flex-1 flex flex-col md:flex-row">
-        {" "}
-        {/* Changed to flex-col on mobile, flex-row on md screens */}
-        {/* Left Column: Sidebar with Upload & Tools */}
-        {/* Adjusted width for mobile (full width) and desktop (constrained width) */}
-        <div className="w-full md:w-1/3 md:min-w-[300px] md:max-w-[400px] border-r md:border-r-border p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-y-auto custom-scrollbar">
+        <div className="w-full md:w-1/3 md:min-w-[300px] md:max-w-[400px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-y-auto custom-scrollbar">
           <UploadFormSection files={files} setFiles={setFiles} />
           <StudyToolsSection
             initialTool={initialTool}
@@ -146,29 +142,21 @@ export default function UploadPage() {
             setPreferences={setPreferences}
           />
         </div>
-        {/* Right Column: Empty Chat Screen */}
-        <div className="flex-1 flex flex-col p-4 sm:p-6 bg-muted/10">
-          {" "}
-          {/* Adjusted padding */}
-          <Card className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6 bg-background border-2 border-dashed border-border/50 shadow-inner">
-            {" "}
-            {/* Adjusted padding */}
+
+        <div className="flex-1 flex flex-col bg-muted/10">
+          <Card className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6 bg-background rounded-none shadow-none">
             <img src={CloudPlus} alt="" />
             <p className="text-sm text-muted-foreground/80max-w-md">
-              {" "}
               Upload your notes <br />
               to get started
             </p>
           </Card>
-          {/* Disabled Chat Input Area */}
           <div className="relative mt-4 sm:mt-6 flex items-start gap-2">
-            {" "}
-            {/* Adjusted margin-top */}
             <Textarea
               placeholder="Ask a question about your documents..."
               value=""
               readOnly
-              className="flex-1 h-[150px] cursor-not-allowed text-sm resize-none" // Adjusted font size
+              className="flex-1 h-[150px] cursor-not-allowed text-sm resize-none"
               disabled
             />
             <Button
@@ -181,44 +169,37 @@ export default function UploadPage() {
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 mt-2 justify-center">
               <Button variant="outline" size="sm" disabled className="text-xs">
                 Summarize note
-              </Button>{" "}
+              </Button>
               <Button variant="outline" size="sm" disabled className="text-xs">
                 Create flashcards
-              </Button>{" "}
+              </Button>
               <Button variant="outline" size="sm" disabled className="text-xs">
                 Research
-              </Button>{" "}
+              </Button>
               <Button variant="outline" size="sm" disabled className="text-xs">
                 Explain more
-              </Button>{" "}
+              </Button>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Start Session Button */}
       <div className="sticky bottom-0 w-full bg-background border-t border-border p-4 flex justify-center shadow-lg z-10">
         <div className="text-center w-full max-w-xs">
           <Button
             onClick={handleUploadAndProcess}
             disabled={isUploading || files.length === 0}
-            className="px-6 py-4 rounded-full text-base bg-sa-primary hover:bg-[#054ed0] text-white w-full shadow-lg sm:px-8 sm:py-6 sm:text-lg"
+            className="px-6 py-4 rounded-full text-base bg-sa-primary hover:bg-[#054ed0] text-white w-full shadow-lg sm:px-8 sm:py-6 sm:text-lg disabled:cursor-not-allowed! cursor-pointer"
           >
             {isUploading ? (
               <>
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />{" "}
-                {/* Adjusted icon size */}
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
                 Uploading & Processing ({uploadProgress}%)
               </>
             ) : (
               "Start Study Session"
             )}
           </Button>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-2 sm:mt-3">
-            {" "}
-            {/* Adjusted font size and margin */}
-            Your files will be processed securely.
-          </p>
         </div>
       </div>
     </div>

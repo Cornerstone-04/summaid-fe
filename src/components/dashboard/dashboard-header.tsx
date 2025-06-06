@@ -30,8 +30,6 @@ export function DashboardHeader() {
   const avatarFallbackLetter =
     user?.displayName?.charAt(0).toUpperCase() || "G";
 
-  console.log(user?.photoURL);
-
   const handleConfirmSignOut = async (event: FormEvent) => {
     event.preventDefault();
 
