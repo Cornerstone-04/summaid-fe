@@ -7,6 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { UploadCloud, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
@@ -129,9 +134,17 @@ export function UploadFormSection({
                       className="flex items-center justify-between text-sm"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="truncate max-w-[200px]">
-                          {file.name}
-                        </span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="truncate max-w-[200px]">
+                              {file.name}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span>{file.name}</span>
+                          </TooltipContent>
+                        </Tooltip>
+
                         <span className="text-xs text-muted-foreground">
                           ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                         </span>

@@ -4,6 +4,7 @@ import { Features } from "@/components/layout/landing/features";
 import { MeetTheBuilder } from "@/components/layout/landing/meet-the-builder";
 import { FAQS } from "@/components/layout/landing/faqs";
 import { Footer } from "@/components/layout/landing/footer";
+import { ScrollToTOp } from "@/components/shared/scroll-to-top";
 
 export default function LandingPage() {
   return (
@@ -20,6 +21,7 @@ export default function LandingPage() {
       <MeetTheBuilder />
       <FAQS />
       <Footer />
+      <ScrollToTOp />
     </div>
   );
 }

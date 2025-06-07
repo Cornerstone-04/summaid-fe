@@ -1,33 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
-import { db } from "@/lib/firebase";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { useAuth } from "@/store/useAuth";
-import { UploadFormSection } from "@/components/upload/upload-form-section"; // Ensure correct import path
-import { StudyToolsSection } from "@/components/upload/study-tools-section"; // Ensure correct import path
+import { UploadFormSection } from "@/components/upload/upload-form-section";
+import { StudyToolsSection } from "@/components/upload/study-tools-section";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CloudPlus } from "@/assets/icons";
+import { useUploadDocuments } from "@/hooks/useUploadDocuments";
 
 export default function UploadPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const initialTool = searchParams.get("tool");
 
   const [files, setFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [preferences, setPreferences] = useState({
     generateFlashcards: false,
@@ -35,7 +24,26 @@ export default function UploadPage() {
     generateSummary: false,
   });
 
-  const handleUploadAndProcess = async () => {
+  const {
+    uploadDocuments,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    uploadProgress,
+    data: sessionId,
+  } = useUploadDocuments();
+
+  useEffect(() => {
+    if (isSuccess && sessionId) {
+      navigate(`/session/${sessionId}`);
+    }
+    if (isError) {
+      console.error("UploadPage received error from hook:", error);
+    }
+  }, [isSuccess, sessionId, navigate, isError, error]);
+
+  const handleSubmitUpload = () => {
     if (
       !preferences.generateSummary &&
       !preferences.generateFlashcards &&
@@ -51,83 +59,8 @@ export default function UploadPage() {
       toast.error("Please upload at least one document to start.");
       return;
     }
-    if (!user) {
-      toast.error("You must be logged in to upload documents.");
-      navigate("/auth/get-started");
-      return;
-    }
 
-    setIsUploading(true);
-    setUploadProgress(0);
-    const storage = getStorage();
-    const sessionId = doc(collection(db, "sessions")).id;
-
-    try {
-      const uploadedFileDetails: {
-        fileName: string;
-        storagePath: string;
-        downloadURL: string;
-        mimeType: string;
-        size: number;
-      }[] = [];
-
-      for (const file of files) {
-        const fileRef = ref(
-          storage,
-          `users/${user.uid}/sessions/${sessionId}/${file.name}`
-        );
-        const uploadTask = uploadBytesResumable(fileRef, file);
-
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              const progress =
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(Math.round(progress));
-            },
-            (error) => {
-              console.error("Upload failed:", error);
-              toast.error(`Failed to upload ${file.name}.`);
-              setIsUploading(false);
-              reject(error);
-            },
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              uploadedFileDetails.push({
-                fileName: file.name,
-                storagePath: uploadTask.snapshot.ref.fullPath,
-                downloadURL: downloadURL,
-                mimeType: file.type,
-                size: file.size,
-              });
-              resolve();
-            }
-          );
-        });
-      }
-
-      await setDoc(doc(db, "sessions", sessionId), {
-        userId: user.uid,
-        files: uploadedFileDetails,
-        preferences: preferences,
-        createdAt: serverTimestamp(),
-        status: "processing",
-        summary: null,
-        flashcards: [],
-        studyGuide: null,
-        chatHistory: [],
-      });
-
-      toast.success("Documents uploaded! Processing your session...");
-      navigate(`/session/${sessionId}`);
-    } catch (error) {
-      console.error("Error during upload or Firestore update:", error);
-      toast.error(
-        "An error occurred during session creation. Please try again."
-      );
-      setIsUploading(false);
-    }
+    uploadDocuments({ files, preferences });
   };
 
   return (
@@ -145,8 +78,8 @@ export default function UploadPage() {
 
         <div className="flex-1 flex flex-col bg-muted/10">
           <Card className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6 bg-background rounded-none shadow-none">
-            <img src={CloudPlus} alt="" />
-            <p className="text-sm text-muted-foreground/80max-w-md">
+            <img src={CloudPlus} alt="Cloud icon" />
+            <p className="text-sm text-muted-foreground/80 max-w-md">
               Upload your notes <br />
               to get started
             </p>
@@ -187,11 +120,11 @@ export default function UploadPage() {
       <div className="sticky bottom-0 w-full bg-background border-t border-border p-4 flex justify-center shadow-lg z-10">
         <div className="text-center w-full max-w-xs">
           <Button
-            onClick={handleUploadAndProcess}
-            disabled={isUploading || files.length === 0}
+            onClick={handleSubmitUpload}
+            disabled={isLoading || files.length === 0}
             className="px-6 py-4 rounded-full text-base bg-sa-primary hover:bg-[#054ed0] text-white w-full shadow-lg sm:px-8 sm:py-6 sm:text-lg disabled:cursor-not-allowed! cursor-pointer"
           >
-            {isUploading ? (
+            {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
                 Uploading & Processing ({uploadProgress}%)
@@ -200,6 +133,9 @@ export default function UploadPage() {
               "Start Study Session"
             )}
           </Button>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-2 sm:mt-3">
+            Your files will be processed securely.
+          </p>
         </div>
       </div>
     </div>

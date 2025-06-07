@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, RefreshCw, AlertTriangle, Sparkles } from "lucide-react";
+import { Home, RefreshCw, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -10,36 +10,24 @@ export default function ErrorPage() {
     setIsRetrying(true);
     setTimeout(() => {
       window.location.reload();
-    }, 1500);
+    }, 800);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-sa-primary/10 text-foreground relative p-4">
-      {/* Main Content Area */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-16 space-y-8  mx-auto">
-        {/* Error Icon */}
         <div className="w-28 h-28 bg-sa-primary rounded-full flex items-center justify-center shadow-xl">
           <AlertTriangle className="w-14 h-14 text-white" />
         </div>
-
-        {/* Status Tag */}
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-sa-primary/10 border border-sa-primary/20  text-sm backdrop-blur-sm text-sa-primary">
-          <Sparkles className="w-4 h-4 mr-2" />
-          Error 404 - Page Not Found
-        </div>
-
-        {/* Main Heading and Description */}
         <div className="space-y-4">
           <h1 className="text-4xl sm:text-5xl font-bold leading-tight text-sa-primary">
-            Oops! Lost in Space
+            Oops!
           </h1>
           <p className="text-lg max-w-lg mx-auto leading-relaxed text-sa-primary/70">
             The page you're looking for seems to have vanished. It might have
             been moved, deleted, or never existed.
           </p>
         </div>
-
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 items-center pt-4">
           <Link to="/">
             <Button
@@ -50,7 +38,6 @@ export default function ErrorPage() {
               Go Home
             </Button>
           </Link>
-
           <Button
             variant="outline"
             size="lg"
