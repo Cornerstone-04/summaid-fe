@@ -10,6 +10,8 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CloudPlus } from "@/assets/icons";
 import { useUploadDocuments } from "@/hooks/useUploadDocuments";
+import { api } from "@/utils/api";
+import { AxiosError } from "axios";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -36,12 +38,43 @@ export default function UploadPage() {
 
   useEffect(() => {
     if (isSuccess && sessionId) {
-      navigate(`/session/${sessionId}`);
+      // navigate(`/session/${sessionId}`);
+      callBackendProcessingEndpoint(sessionId, navigate);
     }
     if (isError) {
       console.error("UploadPage received error from hook:", error);
     }
   }, [isSuccess, sessionId, navigate, isError, error]);
+
+  const callBackendProcessingEndpoint = async (
+    currentSessionId: string,
+    navigateFunction: typeof navigate
+  ) => {
+    try {
+      // Make the POST request to your backend's document processing endpoint
+      // The api instance (from @/utils/api) already handles attaching the Authorization header.
+      const response = await api.post(`/documents/process`, {
+        sessionId: currentSessionId,
+      });
+
+      toast.success(`Backend says: ${response.data.message}`);
+      console.log("Backend processing initiation response:", response.data);
+
+      // Now navigate to the session page.
+      navigateFunction(`/session/${currentSessionId}`);
+    } catch (backendError) {
+      const err = backendError as AxiosError<{ message: string }>;
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "An unknown error occurred.";
+      console.error("Error fetching protected data from backend:", message);
+      toast.error(message);
+
+      // Decide if you want to navigate away or show error on upload page
+      // navigateFunction('/dashboard'); // Or keep user on upload page with error
+    }
+  };
 
   const handleSubmitUpload = () => {
     if (

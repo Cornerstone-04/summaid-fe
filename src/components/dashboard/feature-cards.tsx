@@ -28,14 +28,14 @@ export function FeatureCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       {features.map((item, idx) => (
         <Link
           to={`${item.path}${item.toolParam ? `?tool=${item.toolParam}` : ""}`}
           key={idx}
-          className="block"
+          className="block min-h-[250px]"
         >
-          <Card className="hover:shadow-md transition-shadow cursor-pointer border-[3px] rounded-3xl hover:shadow-[#E4F1FB] min-h-[250px]">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer border-[3px] rounded-3xl hover:shadow-[#E4F1FB] w-full h-full">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="w-20 h-20 md:w-40 md:h-40 mb-4 flex items-center justify-center">
                 {item.icon}

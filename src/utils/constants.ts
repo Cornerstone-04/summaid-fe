@@ -1,15 +1,30 @@
 import { QueryClient } from "@tanstack/react-query";
-export const queryClient = new QueryClient();
+// react query client
+const queryClient = new QueryClient();
 
-export const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY || "";
-export const FIREBASE_AUTH_DOMAIN =
-  import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "";
-export const FIREBASE_PROJECT_ID =
-  import.meta.env.VITE_FIREBASE_PROJECT_ID || "";
-export const FIREBASE_STORAGE_BUCKET =
+// Firebase configuration
+const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY || "";
+const FIREBASE_AUTH_DOMAIN = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "";
+const FIREBASE_PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID || "";
+const FIREBASE_STORAGE_BUCKET =
   import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "";
-export const FIREBASE_MESSAGING_SENDER_ID =
+const FIREBASE_MESSAGING_SENDER_ID =
   import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
-export const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID || "";
-export const FIREBASE_MEASUREMENT_ID =
+const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID || "";
+const FIREBASE_MEASUREMENT_ID =
   import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";
+
+// Base URL for the application
+const APP_BASE_URL = import.meta.env.VITE_APP_BASE_URL;
+
+export {
+  FIREBASE_API_KEY,
+  FIREBASE_APP_ID,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_MEASUREMENT_ID,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  APP_BASE_URL,
+  queryClient,
+};
