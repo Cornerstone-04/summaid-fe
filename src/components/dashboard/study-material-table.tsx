@@ -22,12 +22,6 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
-import { studyMaterials } from "@/lib/mock-data";
-import {
-  Category,
-  StudyMaterial,
-  studyMaterialColumns,
-} from "./study-material-columns";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
@@ -38,13 +32,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { studyMaterialColumns } from "./study-material-columns";
+import { Category, SessionDocument, StudyMaterial } from "@/types";
 
-interface Props {
+interface StudyMaterialsTableProps {
   viewMode: "grid" | "table";
   sortBy: "recent" | "title";
+  sessions: SessionDocument[];
 }
 
-export function StudyMaterialTable({ viewMode, sortBy }: Props) {
+export function StudyMaterialTable({
+  viewMode,
+  sortBy,
+  sessions,
+}: StudyMaterialsTableProps) {
   const [query, setQuery] = useState("");
   const [editItem, setEditItem] = useState<StudyMaterial | null>(null);
   const [editedTitle, setEditedTitle] = useState("");
@@ -52,28 +53,65 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
 
   const navigate = useNavigate();
 
+  // Helper to convert SessionDocument to a format compatible with StudyMaterial
+  const mapSessionToStudyMaterial = (
+    session: SessionDocument
+  ): StudyMaterial => {
+    const displayName =
+      session.files?.[0]?.fileName || `Session ${session.id.substring(0, 8)}`;
+
+    const categories: Category[] = [];
+    if (session.preferences.generateSummary) categories.push("Summary");
+    if (session.preferences.generateFlashcards) categories.push("Flashcards");
+    if (session.preferences.generateStudyGuide) categories.push("Study Guide");
+
+    // Add status category based on session status
+    if (session.status === "completed") categories.push("Processed");
+    else if (session.status === "processing" || session.status === "pending")
+      categories.push("Pending");
+    else if (
+      session.status === "failed" ||
+      session.status === "completed_with_errors"
+    )
+      categories.push("Error");
+
+    return {
+      id: session.id,
+      name: displayName,
+      date: session.created_at
+        ? new Date(session.created_at).toLocaleDateString()
+        : "N/A",
+      categories: categories,
+      status: session.status,
+    };
+  };
+
   const filtered = useMemo(() => {
-    return studyMaterials
+    const mappedSessions = sessions.map(mapSessionToStudyMaterial);
+
+    return mappedSessions
       .filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
       .sort((a, b) =>
         sortBy === "recent"
           ? new Date(b.date).getTime() - new Date(a.date).getTime()
           : a.name.localeCompare(b.name)
-      )
-      .map((item) => ({
-        ...item,
-        categories: item.categories as Category[],
-      }));
-  }, [query, sortBy]);
+      );
+  }, [query, sortBy, sessions]);
 
   const handleEdit = useCallback((material: StudyMaterial) => {
     setEditItem(material);
     setEditedTitle(material.name);
+    toast.info(
+      "Edit functionality is a placeholder. Implement Supabase update."
+    );
   }, []);
 
   const handleDelete = useCallback((material: StudyMaterial) => {
     console.log("Delete clicked for:", material.name);
     setDeleteItem(material);
+    toast.info(
+      "Delete functionality is a placeholder. Implement Supabase delete."
+    );
   }, []);
 
   const columns = useMemo(
@@ -88,12 +126,14 @@ export function StudyMaterialTable({ viewMode, sortBy }: Props) {
   });
 
   function handleSave() {
-    toast.success("Title updated!");
+    console.log(`Saving new title for ${editItem?.id}: ${editedTitle}`);
+    toast.success("Title updated! (Placeholder)");
     setEditItem(null);
   }
 
   function handleConfirmDelete() {
-    toast.success("Material deleted!");
+    console.log(`Confirming delete for ${deleteItem?.id}`);
+    toast.success("Material deleted! (Placeholder)");
     setDeleteItem(null);
   }
 

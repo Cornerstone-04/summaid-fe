@@ -8,11 +8,15 @@ import { StudyMaterialControls } from "@/components/dashboard/study-material-con
 import { StudyMaterialTable } from "@/components/dashboard/study-material-table";
 import { useAuth } from "@/store/useAuth";
 import { api } from "@/utils/api";
+import { useUserSessions } from "@/hooks/useUserSessions"; // Import the new hook
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
-  const { user } = useAuth();
+  const { user } = useAuth(); // User state from your auth store
+
+  // --- New: Fetch user sessions ---
+  const { sessions, isLoadingSessions, sessionsError } = useUserSessions();
 
   const userFullName =
     user?.user_metadata?.full_name ||
@@ -21,7 +25,7 @@ export default function DashboardPage() {
     "Guest";
   const firstName = userFullName.split(" ")[0];
 
-  const hasFetchedData = useRef(false);
+  const hasFetchedProtectedData = useRef(false); // Renamed for clarity
 
   const fetchProtectedUserData = async () => {
     try {
@@ -38,18 +42,19 @@ export default function DashboardPage() {
       toast.error(message);
 
       if (err.response?.status === 401 || err.response?.status === 403) {
-        // Optional: handle re-auth
+        // Handle re-authentication or redirection if needed
         // Example: getAuth().signOut(); navigate("/auth/get-started");
       }
     }
   };
 
   useEffect(() => {
-    if (!hasFetchedData.current) {
+    // Only fetch protected data once per component mount, if not already fetched
+    if (!hasFetchedProtectedData.current) {
       fetchProtectedUserData();
-      hasFetchedData.current = true;
+      hasFetchedProtectedData.current = true;
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once after initial render
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
@@ -63,7 +68,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <FeatureCards />
+        <FeatureCards /> {/* You might pass session data to this too */}
 
         <StudyMaterialControls
           viewMode={viewMode}
@@ -72,7 +77,15 @@ export default function DashboardPage() {
           onSortChange={setSortBy}
         />
 
-        <StudyMaterialTable viewMode={viewMode} sortBy={sortBy} />
+        {isLoadingSessions ? (
+          <div className="text-center text-muted-foreground">Loading your study sessions...</div>
+        ) : sessionsError ? (
+          <div className="text-center text-destructive">Error: {sessionsError}</div>
+        ) : sessions.length === 0 ? (
+          <div className="text-center text-muted-foreground">No study sessions found. Upload a document to get started!</div>
+        ) : (
+          <StudyMaterialTable viewMode={viewMode} sortBy={sortBy} sessions={sessions} />
+        )}
       </main>
     </div>
   );

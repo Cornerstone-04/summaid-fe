@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,9 +34,6 @@ export function DocumentListSection({ files }: DocumentListSectionProps) {
               <div className="flex items-start justify-between w-full">
                 <div className="flex flex-col items-start">
                   <CardTitle className="text-base">Data Sources</CardTitle>
-                  <CardDescription className="text-sm text-balance text-start">
-                    Attached documents for this study session.
-                  </CardDescription>
                 </div>
                 <ChevronDown className="size-5 transition-transform data-[state=open]:rotate-180" />
               </div>

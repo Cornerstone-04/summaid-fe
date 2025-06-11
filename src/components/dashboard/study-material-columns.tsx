@@ -8,15 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Pencil, MoreVertical, Trash2, FileText, Book } from "lucide-react";
 import { JSX } from "react";
+import { StudyMaterial } from "@/types";
 
 export type Category = "Flashcard Set" | "Note Explain";
 
-export type StudyMaterial = {
-  id: string;
-  name: string;
-  date: string;
-  categories: Category[];
-};
+
 
 const categoryStyles: Record<Category, string> = {
   "Flashcard Set":
