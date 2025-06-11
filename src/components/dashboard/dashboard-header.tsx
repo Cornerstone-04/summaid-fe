@@ -23,13 +23,21 @@ import { useAuth } from "@/store/useAuth";
 
 export function DashboardHeader() {
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+
   const { signoutUser } = useSignout();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const firstName = user?.displayName?.split(" ")[0] || "Guest";
-  const avatarFallbackLetter =
-    user?.displayName?.charAt(0).toUpperCase() || "G";
+  const userFullName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email ||
+    "Guest";
+  const firstName = userFullName.split(" ")[0];
+
+  const userPhotoURL =
+    user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const avatarFallbackLetter = userFullName.charAt(0).toUpperCase();
 
   const handleConfirmSignOut = async (event: FormEvent) => {
     event.preventDefault();
@@ -74,12 +82,12 @@ export function DashboardHeader() {
                     {firstName}
                   </span>
                   <Avatar className="h-8 w-8">
+                    {/* FIX: Use userPhotoURL from Supabase metadata */}
                     <AvatarImage
-                      src={user?.photoURL || "/placeholder.svg"}
+                      src={userPhotoURL || "/placeholder.svg"}
                       alt="User Avatar"
                     />
-                    <AvatarFallback>{avatarFallbackLetter}</AvatarFallback>{" "}
-                    {/* Fallback for initial */}
+                    <AvatarFallback>{avatarFallbackLetter}</AvatarFallback>
                   </Avatar>
                 </div>
               </DropdownMenuTrigger>

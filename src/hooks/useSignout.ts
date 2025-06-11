@@ -1,20 +1,24 @@
-import { auth } from "@/lib/firebase";
-import { FirebaseError } from "firebase/app";
-import { signOut } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export function useSignout() {
   async function signoutUser() {
     try {
-      await signOut(auth);
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
       toast.success("User signed out successfully");
-    } catch (error) {
-      if (error instanceof FirebaseError) {
-        if (error.code === "auth/no-current-user") {
-          toast.error("No user is currently signed in.");
-        } else {
-          toast.error("An unexpected error occurred while signing out.");
-        }
+    } catch (error: unknown) {
+      console.error("Sign out error:", error);
+      
+      // Handle specific Supabase auth errors
+      if (error && typeof error === 'object' && 'message' in error) {
+        toast.error(`Sign out failed: ${(error as { message: string }).message}`);
+      } else {
+        toast.error("An unexpected error occurred while signing out.");
       }
     }
   }

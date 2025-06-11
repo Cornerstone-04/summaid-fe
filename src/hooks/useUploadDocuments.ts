@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/store/useAuth";
+import { api } from "@/utils/api";
 
 const CLOUDINARY_CLOUD_NAME = "dszltxxy2";
 const CLOUDINARY_UPLOAD_PRESET = "summaid_unsigned";
@@ -29,17 +29,18 @@ interface UploadAndProcessArgs {
 }
 
 export function useUploadDocuments() {
-  const { user } = useAuth();
+  const { user } = useAuth(); // User state from your authentication hook
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const mutation = useMutation<string, Error, UploadAndProcessArgs>({
     mutationFn: async ({ files, preferences }) => {
-      if (!user) {
-        throw new Error("User not authenticated.");
+      // Step 1: Ensure user is authenticated AND we have their UID
+      if (!user || !user.id) {
+        throw new Error("User not authenticated or UID missing.");
       }
 
       setUploadProgress(0);
-      const sessionId = doc(collection(db, "sessions")).id;
+      const sessionId = crypto.randomUUID();
 
       const uploadedFileDetails: CloudinaryFileDetail[] = [];
       let totalUploadedBytes = 0;
@@ -48,6 +49,7 @@ export function useUploadDocuments() {
         0
       );
 
+      // Step 2: Upload files to Cloudinary
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const formData = new FormData();
@@ -113,23 +115,108 @@ export function useUploadDocuments() {
         }
       }
 
-      await setDoc(doc(db, "sessions", sessionId), {
-        userId: user.uid,
-        files: uploadedFileDetails,
-        preferences: preferences,
-        createdAt: serverTimestamp(),
-        status: "processing",
-        summary: null,
-        flashcards: [],
-        studyGuide: null,
-        chatHistory: [],
+      // Step 3: Crucial check for Supabase session directly before DB insert
+      // This ensures the client has the most up-to-date authentication state
+      const {
+        data: { session: currentSession },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw new Error(
+          `Failed to get current Supabase session: ${sessionError.message}`
+        );
+      }
+
+      if (
+        !currentSession ||
+        !currentSession.user ||
+        currentSession.user.id !== user.id
+      ) {
+        // This indicates a mismatch between useAuth's user and the actual Supabase session
+        console.error("Supabase session mismatch or missing:", {
+          useAuthUser: user?.id,
+          currentSessionUser: currentSession?.user?.id,
+        });
+        throw new Error(
+          "Supabase session invalid or not fully synchronized. Please try logging in again."
+        );
+      }
+
+      console.log("Inserting session with user_id:", user.id); // Log the user.id being used
+      console.log("Debug info before insert:", {
+        userId: user.id,
+        userIdType: typeof user.id,
+        sessionUserId: currentSession.user.id,
+        sessionUserIdType: typeof currentSession.user.id,
+        areEqual: user.id === currentSession.user.id,
       });
+      // Step 4: Supabase: Insert a new session record
+      const { data: sessionInsertData, error: sessionInsertError } =
+        await supabase
+          .from("sessions")
+          .insert({
+            id: sessionId,
+            user_id: user.id, // This is fine - Supabase will handle the conversion
+            files: uploadedFileDetails,
+            preferences: preferences,
+            created_at: new Date().toISOString(),
+            status: "pending",
+            summary: null,
+            flashcards: [],
+            study_guide: null,
+            chat_history: [],
+            error_message: null,
+            processed_at: null,
+            total_text_length: 0,
+            total_chunks: 0,
+            successful_files: [],
+            processing_errors: [],
+          })
+          .select()
+          .single();
+
+      if (sessionInsertError) {
+        const errorMessage =
+          sessionInsertError.message ||
+          "Unknown error during Supabase session creation.";
+        console.error("Supabase session insert failed:", sessionInsertError); // Log full error object
+        throw new Error(
+          `Failed to create session in Supabase: ${errorMessage}`
+        );
+      }
+
+      if (!sessionInsertData) {
+        throw new Error("Session data not returned after insertion.");
+      }
+
+      // Step 5: Call your backend API to initiate processing
+      try {
+        await api.post("/documents/process", { sessionId });
+        toast.success("Session created and processing initiated!");
+      } catch (backendError) {
+        const err = backendError as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || err.message;
+        console.error("Error initiating backend processing:", message);
+        await supabase
+          .from("sessions")
+          .update({
+            status: "failed",
+            error_message: `Backend processing initiation failed: ${message}`,
+            processed_at: new Date().toISOString(),
+          })
+          .eq("id", sessionId);
+
+        throw new Error(
+          `Failed to initiate document processing on backend: ${message}`
+        );
+      }
 
       return sessionId;
     },
-    onSuccess: () => {
+    onSuccess: (sessionId) => {
       toast.success(
-        "Documents uploaded to Cloudinary! Processing your session..."
+        `Documents uploaded and session ${sessionId} initiated successfully!`
       );
     },
     onError: (error) => {

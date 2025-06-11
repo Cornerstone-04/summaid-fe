@@ -13,7 +13,13 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
   const { user } = useAuth();
-  const firstName = user?.displayName?.split(" ")[0] || "Guest";
+
+  const userFullName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email ||
+    "Guest";
+  const firstName = userFullName.split(" ")[0];
 
   const hasFetchedData = useRef(false);
 

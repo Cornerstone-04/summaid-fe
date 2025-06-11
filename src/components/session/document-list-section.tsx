@@ -66,11 +66,14 @@ export function DocumentListSection({ files }: DocumentListSectionProps) {
                     <div className="flex flex-col items-start">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <FileTextIcon className="w-4 h-4 text-sa-primary shrink-0" />
-                          <span className="truncate max-w-[250px]">
-                            {file.fileName}
+                          <span className="flex items-center gap-2">
+                            <FileTextIcon className="w-4 h-4 text-sa-primary shrink-0" />
+                            <span className="truncate max-w-[250px]">
+                              {file.fileName}
+                            </span>
                           </span>
                         </TooltipTrigger>
+
                         <TooltipContent>
                           <span>{file.fileName}</span>
                         </TooltipContent>

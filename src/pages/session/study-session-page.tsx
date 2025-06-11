@@ -1,13 +1,12 @@
 // summaid-fe/src/pages/session/study-session-page.tsx
-import { useParams } from "react-router"; // Use react-router-dom for useParams
+import { useParams } from "react-router";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Sparkles, BookOpen, Send, Loader2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { doc, onSnapshot, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Card,
@@ -20,7 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentListSection } from "@/components/session/document-list-section";
 import { StudyToolsDisplaySection } from "@/components/session/study-tools-display-section";
-import { api } from "@/utils/api"; // Import your configured Axios API client
+import { api } from "@/utils/api";
 import { AxiosError } from "axios";
 
 interface FileDetail {
@@ -39,29 +38,34 @@ interface Flashcard {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  timestamp: Timestamp;
+  timestamp: string; // Changed from Timestamp to string for Supabase
 }
 
 interface SessionData {
-  userId: string;
+  id: string;
+  user_id: string;
   files: FileDetail[];
   preferences: {
     generateFlashcards: boolean;
     generateStudyGuide: boolean;
     generateSummary: boolean;
   };
-  createdAt: Timestamp;
+  created_at: string;
   status: string;
   summary: string | null;
   flashcards: Flashcard[];
-  studyGuide: string | null;
-  chatHistory: ChatMessage[];
-  errorMessage?: string;
+  study_guide: string | null;
+  chat_history: ChatMessage[];
+  error_message?: string;
+  processed_at: string | null;
+  total_text_length: number;
+  total_chunks: number;
+  successful_files: string[];
+  processing_errors: string[];
 }
 
 interface BackendErrorResponse {
   message?: string;
-  // Add other properties your backend might send in an error response, e.g., 'code', 'details'
 }
 
 export default function StudySessionPage() {
@@ -79,34 +83,69 @@ export default function StudySessionPage() {
       return;
     }
 
-    const sessionRef = doc(db, "sessions", sessionId);
-    const unsubscribe = onSnapshot(
-      sessionRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data() as SessionData;
-          setSessionData(data);
-          setLoadingSession(false);
-        } else {
-          toast.error("Session not found.");
-          setLoadingSession(false);
-        }
-      },
-      (error) => {
-        console.error("Error fetching session:", error);
-        toast.error("Error loading session data.");
-        setLoadingSession(false);
-      }
-    );
+    // Initial fetch
+    fetchSessionData();
 
-    return () => unsubscribe();
+    // Set up real-time subscription
+    const channel = supabase
+      .channel(`session_${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sessions",
+          filter: `id=eq.${sessionId}`,
+        },
+        (payload) => {
+          console.log("Session updated:", payload);
+          if (payload.new) {
+            setSessionData(payload.new as SessionData);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [sessionId]);
+
+  const fetchSessionData = async () => {
+    if (!sessionId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching session:", error);
+        toast.error("Session not found.");
+        setLoadingSession(false);
+        return;
+      }
+
+      if (data) {
+        setSessionData(data as SessionData);
+      } else {
+        toast.error("Session not found.");
+      }
+    } catch (error) {
+      console.error("Error fetching session:", error);
+      toast.error("Error loading session data.");
+    } finally {
+      setLoadingSession(false);
+    }
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [sessionData?.chatHistory]);
+  }, [sessionData?.chat_history]);
 
   const handleSendMessage = async () => {
     if (!chatInput.trim() || !sessionId) return;
@@ -116,41 +155,57 @@ export default function StudySessionPage() {
     const userMessage: ChatMessage = {
       role: "user",
       content: chatInput.trim(),
-      timestamp: Timestamp.now(),
+      timestamp: new Date().toISOString(),
     };
 
+    // Optimistically update the UI
     setSessionData((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        chatHistory: [...prev.chatHistory, userMessage],
+        chat_history: [...prev.chat_history, userMessage],
       };
     });
     setChatInput("");
 
     try {
-      const backendUrl =
-        process.env.NODE_ENV === "production"
-          ? "YOUR_DEPLOYED_BACKEND_RENDER_URL"
-          : "http://localhost:5000";
+      // Get auth token for backend request
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      const response = await api.post(`${backendUrl}/api/v1/chat-document`, {
-        sessionId: sessionId,
-        message: userMessage.content,
-      });
-      console.log(
-        "Chatbot response initiated (backend will update Firestore):",
-        response.data
+      if (!session?.access_token) {
+        throw new Error("No valid session token found");
+      }
+
+      const response = await api.post(
+        "/api/v1/chat-document",
+        {
+          sessionId: sessionId,
+          message: userMessage.content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
+
+      console.log("Chatbot response initiated:", response.data);
     } catch (error) {
       console.error("Error sending message to chatbot:", error);
       toast.error("Failed to get response from AI. Please try again.");
 
+      // Rollback optimistic update
       setSessionData((prev) => {
         if (!prev) return null;
         return {
           ...prev,
-          chatHistory: prev.chatHistory.slice(0, prev.chatHistory.length - 1),
+          chat_history: prev.chat_history.slice(
+            0,
+            prev.chat_history.length - 1
+          ),
         };
       });
     } finally {
@@ -158,7 +213,6 @@ export default function StudySessionPage() {
     }
   };
 
-  // --- NEW: Function to trigger on-demand content generation ---
   const handleGenerateContent = async (
     contentType:
       | "summary"
@@ -172,28 +226,36 @@ export default function StudySessionPage() {
       return;
     }
     if (isSendingMessage) {
-      // Prevent multiple simultaneous calls
       toast.info("A request is already in progress.");
       return;
     }
 
-    setIsSendingMessage(true); // Use this for a generic loading state for content generation
+    setIsSendingMessage(true);
     toast.loading(
       `Generating ${contentType.replace(/([A-Z])/g, " $1").toLowerCase()}...`
-    ); // E.g., "Generating study guide..."
+    );
 
     try {
-      const backendUrl =
-        process.env.NODE_ENV === "production"
-          ? "YOUR_DEPLOYED_BACKEND_RENDER_URL"
-          : "http://localhost:5000";
+      // Get auth token for backend request
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      // Call a new backend endpoint to trigger specific content generation
+      if (!session?.access_token) {
+        throw new Error("No valid session token found");
+      }
+
       const response = await api.post(
-        `${backendUrl}/api/v1/documents/generate`,
+        "/api/v1/documents/generate",
         {
           sessionId: sessionId,
-          contentType: contentType, // Send the type of content to generate
+          contentType: contentType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -204,13 +266,11 @@ export default function StudySessionPage() {
         { id: `generating_${contentType}` }
       );
       console.log("Content generation request sent:", response.data);
-
-      // The backend will update Firestore, and the onSnapshot will update UI
     } catch (error) {
-      const err = error as AxiosError<BackendErrorResponse>; // NEW: Use BackendErrorResponse here
+      const err = error as AxiosError<BackendErrorResponse>;
 
       const errorMessage =
-        err.response?.data?.message || // Now TypeScript knows data might have 'message'
+        err.response?.data?.message ||
         err.message ||
         `Failed to generate ${contentType.toLowerCase()}.`;
 
@@ -254,8 +314,6 @@ export default function StudySessionPage() {
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
       <DashboardHeader />
       <main className="flex-1 flex flex-col md:flex-row">
-        {" "}
-        {/* Main three-column layout */}
         {/* Left Sidebar: Data Sources & Study Tools Status */}
         <div className="w-full md:w-[280px] lg:w-[320px] xl:w-[360px] flex-shrink-0 border-r border-border p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
           <DocumentListSection files={sessionData.files} />
@@ -264,6 +322,7 @@ export default function StudySessionPage() {
             sessionStatus={sessionData.status}
           />
         </div>
+
         {/* Middle Column: Chat Area */}
         <div className="flex-1 flex flex-col bg-muted/10 p-4 sm:p-6">
           <Card className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm">
@@ -274,14 +333,14 @@ export default function StudySessionPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              {sessionData.chatHistory.length === 0 ? (
+              {sessionData.chat_history.length === 0 ? (
                 <div className="text-muted-foreground text-center py-10">
                   <Sparkles className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
                   No conversation yet. Ask a question or wait for processing to
                   complete.
                 </div>
               ) : (
-                sessionData.chatHistory.map((message, index) => (
+                sessionData.chat_history.map((message, index) => (
                   <div
                     key={index}
                     className={`mb-4 p-3 rounded-lg max-w-[80%] ${
@@ -292,7 +351,7 @@ export default function StudySessionPage() {
                   >
                     <p>{message.content}</p>
                     <span className="text-xs opacity-70 mt-1 block">
-                      {message.timestamp.toDate().toLocaleTimeString()}
+                      {new Date(message.timestamp).toLocaleTimeString()}
                     </span>
                   </div>
                 ))
@@ -333,7 +392,7 @@ export default function StudySessionPage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
-                  onClick={() => handleGenerateContent("summary")} // NEW: Call with content type
+                  onClick={() => handleGenerateContent("summary")}
                   disabled={
                     sessionData.status !== "completed" || isSendingMessage
                   }
@@ -344,7 +403,7 @@ export default function StudySessionPage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
-                  onClick={() => handleGenerateContent("flashcards")} // NEW: Call with content type
+                  onClick={() => handleGenerateContent("flashcards")}
                   disabled={
                     sessionData.status !== "completed" || isSendingMessage
                   }
@@ -355,7 +414,7 @@ export default function StudySessionPage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
-                  onClick={() => handleGenerateContent("research")} // NEW: Call with content type
+                  onClick={() => handleGenerateContent("research")}
                   disabled={
                     sessionData.status !== "completed" || isSendingMessage
                   }
@@ -366,7 +425,7 @@ export default function StudySessionPage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
-                  onClick={() => handleGenerateContent("explain")} // NEW: Call with content type
+                  onClick={() => handleGenerateContent("explain")}
                   disabled={
                     sessionData.status !== "completed" || isSendingMessage
                   }
@@ -377,6 +436,7 @@ export default function StudySessionPage() {
             </CardFooter>
           </Card>
         </div>
+
         {/* Right Sidebar: Generated Content Tabs */}
         <div className="w-full md:w-[280px] lg:w-[320px] xl:w-[360px] flex-shrink-0 p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
           <Tabs defaultValue="summary" className="flex flex-col flex-1">

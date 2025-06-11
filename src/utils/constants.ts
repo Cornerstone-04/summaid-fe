@@ -13,6 +13,8 @@ const FIREBASE_MESSAGING_SENDER_ID =
 const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID || "";
 const FIREBASE_MEASUREMENT_ID =
   import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Base URL for the application
 const APP_BASE_URL = import.meta.env.VITE_APP_BASE_URL;
@@ -27,4 +29,6 @@ export {
   FIREBASE_STORAGE_BUCKET,
   APP_BASE_URL,
   queryClient,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
 };

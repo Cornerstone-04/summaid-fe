@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { User } from "@supabase/supabase-js"; // Import Supabase User type
+import { supabase } from "@/lib/supabase"; // Import your Supabase client
 
 interface AuthState {
   user: User | null;
@@ -11,23 +11,34 @@ interface AuthState {
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
-  loading: true, // start as loading until auth resolves
+  loading: true,
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
 }));
 
-let authListenerInitialized = false;
-
 export function listenToAuthChanges() {
-  if (authListenerInitialized) {
+  if (useAuth.getState().user !== null || !useAuth.getState().loading) {
     return;
   }
 
   useAuth.getState().setLoading(true);
 
-  onAuthStateChanged(auth, (user) => {
-    useAuth.getState().setUser(user);
+  // Supabase listener for authentication state changes
+  const {
+    data: { subscription: authListener },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      useAuth.getState().setUser(session.user || null);
+      console.log("Supabase Auth: User is logged in.", session.user?.email);
+    } else {
+      useAuth.getState().setUser(null);
+      console.log("Supabase Auth: User is logged out.");
+    }
     useAuth.getState().setLoading(false);
-    authListenerInitialized = true;
   });
+
+  // Cleanup function to unsubscribe from the listener
+  return () => {
+    authListener.unsubscribe();
+  };
 }

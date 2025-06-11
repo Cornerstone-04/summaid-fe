@@ -1,9 +1,9 @@
+// pages/auth/login.tsx
 import { Button } from "@/components/ui/button";
 import { Brain, Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router";
 import { useLogin } from "@/hooks/useLogin";
-import { toast } from "sonner";
 import { MdWavingHand } from "react-icons/md";
 import { useAuth } from "@/store/useAuth";
 import { useEffect } from "react";
@@ -14,17 +14,7 @@ export default function LoginPage() {
   const { user } = useAuth();
 
   const handleGoogleLogin = () => {
-    login(undefined, {
-      onSuccess: () => {
-        toast.success("Login successful!", {
-          description: "Welcome to SummAid",
-        });
-      },
-      onError: (err: unknown) => {
-        console.error("Login failed:", err);
-        toast.error("Login failed. Try again.");
-      },
-    });
+    login();
   };
 
   useEffect(() => {
@@ -46,7 +36,7 @@ export default function LoginPage() {
         </div>
 
         <h2 className="text-center text-lg font-semibold">
-          Welcome  <MdWavingHand className="text-sa-primary inline" />
+          Welcome <MdWavingHand className="text-sa-primary inline" />
         </h2>
         <p className="text-center text-sm text-muted-foreground">
           Sign in to continue your learning journey.
@@ -66,7 +56,7 @@ export default function LoginPage() {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Signing in...
+              Redirecting...
             </>
           ) : (
             <>
