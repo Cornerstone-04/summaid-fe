@@ -178,7 +178,8 @@ export default function StudySessionPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
-      <DashboardHeader />
+      <DashboardHeader sessionTitle={sessionData?.title} />
+
       <MobileTabsView
         sessionData={sessionData}
         chatInput={chatInput}

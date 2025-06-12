@@ -26,7 +26,7 @@ export function ChatSection({
   return (
     <div className="flex-1 flex flex-col bg-muted/10 p-4 sm:p-6 min-h-0 h-full">
       <Card className="flex-1 flex flex-col bg-background rounded-none shadow-none border-none overflow-hidden min-h-0">
-        <CardContent className="flex-1 overflow-y-auto p-4 custom-scrollbar min-h-0">
+        <CardContent className="flex-1 max-h-full overflow-y-auto p-4 custom-scrollbar min-h-0">
           {sessionData.chat_history?.length === 0 ? (
             <div className="text-muted-foreground text-center py-10">
               <Sparkles className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />

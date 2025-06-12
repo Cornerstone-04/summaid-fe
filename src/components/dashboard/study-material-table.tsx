@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Search, MoreVertical, Pencil, Trash2, Loader2 } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -34,6 +34,8 @@ import {
 import { toast } from "sonner";
 import { studyMaterialColumns } from "./study-material-columns";
 import { Category, SessionDocument, StudyMaterial } from "@/types";
+import { useUpdateSessionTitle } from "@/hooks/useUpdateSessionTitle";
+import { useDeleteSession } from "@/hooks/useDeleteSession";
 
 interface StudyMaterialsTableProps {
   viewMode: "grid" | "table";
@@ -52,6 +54,8 @@ export function StudyMaterialTable({
   const [deleteItem, setDeleteItem] = useState<StudyMaterial | null>(null);
 
   const navigate = useNavigate();
+  const updateSessionTitle = useUpdateSessionTitle();
+  const deleteSession = useDeleteSession();
 
   // Helper to convert SessionDocument to a format compatible with StudyMaterial
   const mapSessionToStudyMaterial = (
@@ -126,21 +130,25 @@ export function StudyMaterialTable({
   });
 
   function handleSave() {
-    console.log(`Saving new title for ${editItem?.id}: ${editedTitle}`);
-    toast.success("Title updated! (Placeholder)");
+    if (!editItem || editedTitle.trim() === "") return;
+
+    updateSessionTitle.mutate({
+      sessionId: editItem.id,
+      newTitle: editedTitle.trim(),
+    });
+
     setEditItem(null);
   }
 
   function handleConfirmDelete() {
-    console.log(`Confirming delete for ${deleteItem?.id}`);
-    toast.success("Material deleted! (Placeholder)");
+    if (!deleteItem) return;
+    deleteSession.mutate(deleteItem.id);
     setDeleteItem(null);
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Your Study Materials</h2>
+      <div className="flex justify-center md:justify-start items-center">
         <div className="relative w-full max-w-xs">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -275,7 +283,21 @@ export function StudyMaterialTable({
               <Button variant="ghost" onClick={() => setEditItem(null)}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>Save</Button>
+              <Button
+                onClick={handleSave}
+                disabled={
+                  updateSessionTitle.isPending || editedTitle.trim() === ""
+                }
+              >
+                {updateSessionTitle.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  "Save"
+                )}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -298,8 +320,19 @@ export function StudyMaterialTable({
               <Button variant="ghost" onClick={() => setDeleteItem(null)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleConfirmDelete}>
-                Delete
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleteSession.isPending}
+              >
+                {deleteSession.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

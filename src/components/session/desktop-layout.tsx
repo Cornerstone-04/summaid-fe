@@ -24,7 +24,8 @@ export function DesktopLayout({
   handleGenerateContent,
 }: DesktopLayoutProps) {
   return (
-    <main className="hidden md:flex flex-1 h-[calc(100vh-theme(spacing.16))]">
+    <main className="hidden md:flex h-[calc(100vh-4rem)] overflow-hidden">
+
       <div className="w-full md:w-[280px] lg:w-[320px] xl:w-[360px] flex-shrink-0 border-r border-border p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
         <DocumentListSection files={sessionData.files} />
         <StudyToolsDisplaySection

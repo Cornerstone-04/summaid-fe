@@ -157,7 +157,8 @@ export function useUploadDocuments() {
           .from("sessions")
           .insert({
             id: sessionId,
-            user_id: user.id, // This is fine - Supabase will handle the conversion
+            user_id: user.id,
+            title: `Session ${sessionId.slice(0, 6)}`,
             files: uploadedFileDetails,
             preferences: preferences,
             created_at: new Date().toISOString(),

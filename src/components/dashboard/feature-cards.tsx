@@ -7,40 +7,47 @@ export function FeatureCards() {
   const features = [
     {
       icon: (
-        <PlusCircle className="w-20 h-20 md:w-40 md:h-40 text-sa-primary" />
+        <PlusCircle className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16 text-sa-primary" />
       ),
       title: "Create Summary",
       path: "/upload",
       toolParam: "summary",
     },
     {
-      icon: <img src={FlashCard} />,
-      title: "Study Flashcards",
+      icon: (
+        <img
+          src={FlashCard}
+          className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16"
+        />
+      ),
+      title: "Flashcards",
       path: "/upload",
       toolParam: "flashcards",
     },
     {
-      icon: <img src={Note} />,
-      title: "Note Explain",
+      icon: (
+        <img src={Note} className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16" />
+      ),
+      title: "Study Guides",
       path: "/upload",
       toolParam: "studyGuide",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 mb-8">
       {features.map((item, idx) => (
         <Link
           to={`${item.path}${item.toolParam ? `?tool=${item.toolParam}` : ""}`}
           key={idx}
-          className="block min-h-[250px]"
+          className="block"
         >
-          <Card className="hover:shadow-md transition-shadow cursor-pointer border-[3px] rounded-3xl hover:shadow-[#E4F1FB] w-full h-full">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <div className="w-20 h-20 md:w-40 md:h-40 mb-4 flex items-center justify-center">
+          <Card className="hover:shadow-sm transition-all duration-150 cursor-pointer border rounded-xl sm:rounded-2xl w-full h-full hover:bg-muted active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+            <CardContent className="p-3 sm:p-5 flex flex-col items-center text-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-center">
                 {item.icon}
               </div>
-              <h3 className="text-lg font-medium">{item.title}</h3>
+              <h3 className="text-sm sm:text-base font-medium">{item.title}</h3>
             </CardContent>
           </Card>
         </Link>

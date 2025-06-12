@@ -31,6 +31,7 @@ export interface SessionDocument {
   total_chunks: number | null;
   successful_files: string[] | null;
   processing_errors: string[] | null;
+  title?: string; // Optional title for the session
 }
 
 export type Category =

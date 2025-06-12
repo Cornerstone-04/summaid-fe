@@ -6,24 +6,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, MoreVertical, Trash2, FileText, Book } from "lucide-react";
+import {
+  Pencil,
+  MoreVertical,
+  Trash2,
+  FileText,
+  Book,
+  AlignLeft,
+} from "lucide-react";
 import { JSX } from "react";
 import { StudyMaterial } from "@/types";
 
-export type Category = "Flashcard Set" | "Note Explain";
-
-
+export type Category = "Flashcards" | "Study Guide" | "Summary";
 
 const categoryStyles: Record<Category, string> = {
-  "Flashcard Set":
+  Flashcards:
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-  "Note Explain":
+  "Study Guide":
     "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  Summary: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
 };
 
 const icons: Record<Category, JSX.Element> = {
-  "Flashcard Set": <FileText className="h-4 w-4" />,
-  "Note Explain": <Book className="h-4 w-4" />,
+  Flashcards: <FileText className="h-4 w-4" />,
+  "Study Guide": <Book className="h-4 w-4" />,
+  Summary: <AlignLeft className="h-4 w-4" />,
 };
 
 export const studyMaterialColumns = (

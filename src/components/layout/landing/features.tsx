@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { BookOpen, Brain, Headphones, Zap } from "lucide-react";
+import { BookOpen, Brain, List } from "lucide-react";
 
 export const Features = () => {
   const { scrollY } = useScroll();
@@ -16,8 +16,11 @@ export const Features = () => {
       title: "Smart Flashcards",
       desc: "Adaptive learning cards",
     },
-    { icon: Headphones, title: "Audio Recaps", desc: "Listen on the go" },
-    { icon: Zap, title: "Instant Analysis", desc: "Real-time insights" },
+    {
+      icon: List,
+      title: "Structured Study Guides",
+      desc: "Clear, concise outlines for faster revision",
+    },
   ];
 
   return (
@@ -33,7 +36,7 @@ export const Features = () => {
           Powerful Features for Modern Learning
         </motion.h3>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
