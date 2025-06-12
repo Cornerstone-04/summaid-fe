@@ -149,13 +149,13 @@ export function StudyMaterialTable({
   return (
     <div className="space-y-4">
       <div className="flex justify-center md:justify-start items-center">
-        <div className="relative w-full max-w-xs">
+        <div className="relative w-full md:max-w-xs">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search materials..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 w-full rounded-full"
           />
         </div>
       </div>

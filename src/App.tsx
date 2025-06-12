@@ -11,7 +11,7 @@ const App = () => {
 
   return (
     <>
-      <Toaster closeButton position="top-right" />
+      <Toaster closeButton position="top-right" duration={2000} />
       <RouterProvider router={router} />
     </>
   );

@@ -17,7 +17,7 @@ interface Preferences {
 
 interface CloudinaryFileDetail {
   fileName: string;
-  cloudStorageUrl: string;
+  // cloudStorageUrl: string;
   mimeType: string;
   size: number;
   publicId?: string;
@@ -85,7 +85,7 @@ export function useUploadDocuments() {
           const data = response.data;
           uploadedFileDetails.push({
             fileName: file.name,
-            cloudStorageUrl: data.secure_url,
+            // cloudStorageUrl: data.secure_url,
             mimeType: file.type,
             size: file.size,
             publicId: data.public_id,
@@ -193,7 +193,9 @@ export function useUploadDocuments() {
 
       // Step 5: Call your backend API to initiate processing
       try {
-        await api.post("/documents/process", { sessionId });
+        console.log("Posting to:", api.defaults.baseURL + "/documents/process");
+
+        await api.post("documents/process", { sessionId });
         toast.success("Session created and processing initiated!");
       } catch (backendError) {
         const err = backendError as AxiosError<{ message: string }>;
