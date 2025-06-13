@@ -41,7 +41,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^11.8.1",
     "framer": "^2.4.1",
     "framer-motion": "^12.9.2",
     "lucide-react": "^0.503.0",
