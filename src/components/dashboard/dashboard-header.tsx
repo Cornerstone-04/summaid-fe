@@ -5,8 +5,15 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useSignout } from "@/hooks/useSignout";
 import { useAuth } from "@/store/useAuth";
 import { UserAvatar } from "./user-avatar";
-import { SignoutDialog } from "./signout-dialog";
 import { SearchComponent } from "./search-component";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
 
 export function DashboardHeader({ sessionTitle }: { sessionTitle?: string }) {
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -54,9 +61,11 @@ export function DashboardHeader({ sessionTitle }: { sessionTitle?: string }) {
           </Link>
 
           {/* Center: Title (md+) */}
-          <h1 className="hidden md:block text-sm sm:text-base md:text-lg font-semibold text-center flex-1 truncate uppercase">
-            {sessionTitle || "Untitled Session"}
-          </h1>
+          {sessionTitle && (
+            <h1 className="hidden md:block text-sm sm:text-base md:text-lg font-semibold text-center flex-1 truncate uppercase">
+              {sessionTitle}
+            </h1>
+          )}
 
           {/* Right: Controls */}
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -76,13 +85,22 @@ export function DashboardHeader({ sessionTitle }: { sessionTitle?: string }) {
         </div>
       </header>
 
-      {/* Signout Dialog */}
-      <SignoutDialog
-        open={showSignOutDialog}
-        onOpenChange={setShowSignOutDialog}
-        onCancel={() => setShowSignOutDialog(false)}
-        onConfirm={handleConfirmSignOut}
-      />
+      <Dialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Sign Out</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to sign out?</p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowSignOutDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmSignOut}>
+              Sign out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

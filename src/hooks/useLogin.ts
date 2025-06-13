@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { SUPERBASE_REDIRECT_URL } from "@/utils/constants";
 
 export function useLogin() {
   const loginMutation = useMutation({
@@ -8,7 +9,7 @@ export function useLogin() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: SUPERBASE_REDIRECT_URL,
         },
       });
 
@@ -25,9 +26,9 @@ export function useLogin() {
     },
     onError: (error) => {
       console.error("Login failed:", error);
-      
+
       // Handle specific Supabase errors if needed
-      if (error && typeof error === 'object' && 'message' in error) {
+      if (error && typeof error === "object" && "message" in error) {
         toast.error(`Login failed: ${(error as { message: string }).message}`);
       } else {
         toast.error("Login failed. Please try again.");
