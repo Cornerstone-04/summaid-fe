@@ -31,14 +31,12 @@ export default function DashboardPage() {
     try {
       const response = await api.get("/users/profile");
       toast.success(`Protected data fetched! ${response.data.message}`);
-      console.log("Protected User Data from Backend:", response.data);
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
       const message =
         err.response?.data?.message ||
         err.message ||
         "An unknown error occurred.";
-      console.error("Error fetching protected data from backend:", message);
       toast.error(message);
 
       if (err.response?.status === 401 || err.response?.status === 403) {

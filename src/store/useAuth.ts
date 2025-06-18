@@ -29,15 +29,12 @@ export function listenToAuthChanges() {
   } = supabase.auth.onAuthStateChange((_event, session) => {
     if (session) {
       useAuth.getState().setUser(session.user || null);
-      console.log("Supabase Auth: User is logged in.", session.user?.email);
     } else {
       useAuth.getState().setUser(null);
-      console.log("Supabase Auth: User is logged out.");
     }
     useAuth.getState().setLoading(false);
   });
 
-  // Cleanup function to unsubscribe from the listener
   return () => {
     authListener.unsubscribe();
   };
