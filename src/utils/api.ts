@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { APP_BASE_URL } from "./constants";
+import { APP_BASE_URL } from "./env";
 import axios from "axios";
 
 export const api = axios.create({

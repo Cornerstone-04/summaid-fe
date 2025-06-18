@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { SUPERBASE_REDIRECT_URL } from "@/utils/constants";
+// import { SUPERBASE_REDIRECT_URL } from "@/utils/env";
 
 export function useLogin() {
   const loginMutation = useMutation({
@@ -9,7 +9,7 @@ export function useLogin() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: SUPERBASE_REDIRECT_URL,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       });
 

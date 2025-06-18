@@ -48,7 +48,7 @@ export function DashboardHeader({ sessionTitle }: { sessionTitle?: string }) {
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background">
-        <div className="container mx-auto flex h-16 items-center px-4 gap-4 justify-between md:justify-normal">
+        <div className="container mx-auto flex h-16 items-center justify-between px-6 md:px-8 lg:px-16 xl:px-24">
           {/* Left: Logo */}
           <Link
             to="/"
