@@ -7,7 +7,7 @@ import { FeatureCards } from "@/components/dashboard/feature-cards";
 import { StudyMaterialControls } from "@/components/dashboard/study-material-controls";
 import { StudyMaterialTable } from "@/components/dashboard/study-material-table";
 import { useAuth } from "@/store/useAuth";
-import { api } from "@/utils/api";
+import { api } from "@/config/api";
 import { useUserSessions } from "@/hooks/useUserSessions"; // Import the new hook
 
 export default function DashboardPage() {
@@ -65,24 +65,31 @@ export default function DashboardPage() {
             Learn smarter with the power of AI ✨
           </p>
         </div>
-
         <FeatureCards /> {/* You might pass session data to this too */}
-
         <StudyMaterialControls
           viewMode={viewMode}
           onViewChange={setViewMode}
           sort={sortBy}
           onSortChange={setSortBy}
         />
-
         {isLoadingSessions ? (
-          <div className="text-center text-muted-foreground">Loading your study sessions...</div>
+          <div className="text-center text-muted-foreground">
+            Loading your study sessions...
+          </div>
         ) : sessionsError ? (
-          <div className="text-center text-destructive">Error: {sessionsError}</div>
+          <div className="text-center text-destructive">
+            Error: {sessionsError}
+          </div>
         ) : sessions.length === 0 ? (
-          <div className="text-center text-muted-foreground">No study sessions found. Upload a document to get started!</div>
+          <div className="text-center text-muted-foreground">
+            No study sessions found. Upload a document to get started!
+          </div>
         ) : (
-          <StudyMaterialTable viewMode={viewMode} sortBy={sortBy} sessions={sessions} />
+          <StudyMaterialTable
+            viewMode={viewMode}
+            sortBy={sortBy}
+            sessions={sessions}
+          />
         )}
       </main>
     </div>

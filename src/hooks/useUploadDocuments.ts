@@ -4,7 +4,7 @@ import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/store/useAuth";
-import { api } from "@/utils/api";
+import { api } from "@/config/api";
 
 const CLOUDINARY_CLOUD_NAME = "dszltxxy2";
 const CLOUDINARY_UPLOAD_PRESET = "summaid_unsigned";

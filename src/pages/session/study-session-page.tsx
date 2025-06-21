@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { api } from "@/utils/api";
+import { api } from "@/config/api";
 import { AxiosError } from "axios";
 
 import { SessionSkeleton } from "@/components/session/session-skeleton";
