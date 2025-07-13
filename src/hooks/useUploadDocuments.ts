@@ -1,26 +1,16 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/store/useAuth";
+import { BACKEND_URL } from "@/config/env";
 import { api } from "@/config/api";
-
-const CLOUDINARY_CLOUD_NAME = "dszltxxy2";
-const CLOUDINARY_UPLOAD_PRESET = "summaid_unsigned";
 
 interface Preferences {
   generateFlashcards: boolean;
   generateStudyGuide: boolean;
   generateSummary: boolean;
-}
-
-interface CloudinaryFileDetail {
-  fileName: string;
-  // cloudStorageUrl: string;
-  mimeType: string;
-  size: number;
-  publicId?: string;
 }
 
 interface UploadAndProcessArgs {
@@ -29,129 +19,20 @@ interface UploadAndProcessArgs {
 }
 
 export function useUploadDocuments() {
-  const { user } = useAuth(); // User state from your authentication hook
+  const { user } = useAuth();
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const mutation = useMutation<string, Error, UploadAndProcessArgs>({
     mutationFn: async ({ files, preferences }) => {
-      // Step 1: Ensure user is authenticated AND we have their UID
-      if (!user || !user.id) {
+      if (!user?.id) {
         throw new Error("User not authenticated or UID missing.");
       }
 
       setUploadProgress(0);
       const sessionId = crypto.randomUUID();
+      const conversationId = sessionId;
 
-      const uploadedFileDetails: CloudinaryFileDetail[] = [];
-      let totalUploadedBytes = 0;
-      const totalBytesToUpload = files.reduce(
-        (sum, file) => sum + file.size,
-        0
-      );
-
-      // Step 2: Upload files to Cloudinary
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-        formData.append("cloud_name", CLOUDINARY_CLOUD_NAME);
-
-        const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
-
-        try {
-          const response = await axios.post(cloudinaryUploadUrl, formData, {
-            onUploadProgress: (progressEvent) => {
-              if (progressEvent.total) {
-                const overallProgress =
-                  ((totalUploadedBytes + progressEvent.loaded) /
-                    totalBytesToUpload) *
-                  100;
-                setUploadProgress(Math.min(100, Math.round(overallProgress)));
-              }
-            },
-          });
-
-          if (response.status !== 200) {
-            throw new Error(
-              `Cloudinary upload failed for ${file.name}: ${
-                response.data?.error?.message ||
-                response.statusText ||
-                "Unknown error"
-              }`
-            );
-          }
-
-          const data = response.data;
-          uploadedFileDetails.push({
-            fileName: file.name,
-            // cloudStorageUrl: data.secure_url,
-            mimeType: file.type,
-            size: file.size,
-            publicId: data.public_id,
-          });
-          totalUploadedBytes += file.size;
-        } catch (axiosError: unknown) {
-          if (axiosError instanceof AxiosError) {
-            console.error(
-              "Cloudinary upload failed for file:",
-              file.name,
-              axiosError.response?.data || axiosError.message
-            );
-            throw new Error(
-              `Failed to upload ${file.name}: ${
-                axiosError.response?.data?.error?.message || axiosError.message
-              }`
-            );
-          } else {
-            console.error(
-              "An unexpected non-Axios error occurred:",
-              axiosError
-            );
-            throw new Error(
-              `An unexpected error occurred while uploading ${file.name}.`
-            );
-          }
-        }
-      }
-
-      // Step 3: Crucial check for Supabase session directly before DB insert
-      // This ensures the client has the most up-to-date authentication state
-      const {
-        data: { session: currentSession },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        throw new Error(
-          `Failed to get current Supabase session: ${sessionError.message}`
-        );
-      }
-
-      if (
-        !currentSession ||
-        !currentSession.user ||
-        currentSession.user.id !== user.id
-      ) {
-        // This indicates a mismatch between useAuth's user and the actual Supabase session
-        console.error("Supabase session mismatch or missing:", {
-          useAuthUser: user?.id,
-          currentSessionUser: currentSession?.user?.id,
-        });
-        throw new Error(
-          "Supabase session invalid or not fully synchronized. Please try logging in again."
-        );
-      }
-
-      console.log("Inserting session with user_id:", user.id); // Log the user.id being used
-      console.log("Debug info before insert:", {
-        userId: user.id,
-        userIdType: typeof user.id,
-        sessionUserId: currentSession.user.id,
-        sessionUserIdType: typeof currentSession.user.id,
-        areEqual: user.id === currentSession.user.id,
-      });
-      // Step 4: Supabase: Insert a new session record
+      console.log("Inserting session with user_id:", user.id);
       const { data: sessionInsertData, error: sessionInsertError } =
         await supabase
           .from("sessions")
@@ -159,7 +40,11 @@ export function useUploadDocuments() {
             id: sessionId,
             user_id: user.id,
             title: `Session ${sessionId.slice(0, 6)}`,
-            files: uploadedFileDetails,
+            files: files.map((file) => ({
+              fileName: file.name,
+              mimeType: file.type,
+              size: file.size,
+            })),
             preferences: preferences,
             created_at: new Date().toISOString(),
             status: "pending",
@@ -181,7 +66,7 @@ export function useUploadDocuments() {
         const errorMessage =
           sessionInsertError.message ||
           "Unknown error during Supabase session creation.";
-        console.error("Supabase session insert failed:", sessionInsertError); // Log full error object
+        console.error("Supabase session insert failed:", sessionInsertError);
         throw new Error(
           `Failed to create session in Supabase: ${errorMessage}`
         );
@@ -191,28 +76,74 @@ export function useUploadDocuments() {
         throw new Error("Session data not returned after insertion.");
       }
 
-      // Step 5: Call your backend API to initiate processing
-      try {
-        console.log("Posting to:", api.defaults.baseURL + "/documents/process");
+      const formData = new FormData();
+      formData.append("session_id", sessionId);
+      formData.append("conversation_id", conversationId);
 
-        await api.post("documents/process", { sessionId });
-        toast.success("Session created and processing initiated!");
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      try {
+        console.log(
+          "Posting files to backend:",
+          `${BACKEND_URL}/process-documents/`
+        );
+
+        const response = await api.post("/process-documents/", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setUploadProgress(percentCompleted);
+            }
+          },
+        });
+
+        if (response.status !== 200) {
+          throw new Error(
+            `Backend processing failed: ${
+              response.data?.message || response.statusText || "Unknown error"
+            }`
+          );
+        }
+
+        await supabase
+          .from("sessions")
+          .update({
+            status: "success", // Or 'processed' if your backend confirms full processing
+            processed_at: new Date().toISOString(),
+            // You can also parse response.data to update other fields like total_text_length, total_chunks, successful_files
+            // For now, assuming successful processing means the files were handled.
+          })
+          .eq("id", sessionId);
+
+        toast.success(
+          response.data.message ||
+            "Documents processed successfully by backend!"
+        );
       } catch (backendError) {
         const err = backendError as AxiosError<{ message: string }>;
-        const message = err.response?.data?.message || err.message;
+        const message =
+          err.response?.data?.message ||
+          err.message ||
+          "An unknown error occurred.";
         console.error("Error initiating backend processing:", message);
+
         await supabase
           .from("sessions")
           .update({
             status: "failed",
-            error_message: `Backend processing initiation failed: ${message}`,
+            error_message: `Backend processing failed: ${message}`,
             processed_at: new Date().toISOString(),
           })
           .eq("id", sessionId);
 
-        throw new Error(
-          `Failed to initiate document processing on backend: ${message}`
-        );
+        throw new Error(`Failed to process documents on backend: ${message}`);
       }
 
       return sessionId;
@@ -221,11 +152,13 @@ export function useUploadDocuments() {
       toast.success(
         `Documents uploaded and session ${sessionId} initiated successfully!`
       );
+      // Optionally, navigate to the session page or dashboard
+      // navigate(`/session/${sessionId}`);
     },
     onError: (error) => {
       console.error("Upload process error:", error);
       toast.error(
-        error.message || "An unexpected error occurred during upload."
+        error.message || "An unexpected error occurred during document upload."
       );
     },
   });

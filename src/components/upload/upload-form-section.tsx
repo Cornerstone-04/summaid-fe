@@ -36,23 +36,28 @@ export function UploadFormSection({
     (acceptedFiles: File[]) => {
       const newFiles = acceptedFiles.filter((file) => {
         const mimeType = file.type;
+        // Updated file type validation to match backend supported types:
+        // .pdf, .docx, .pptx, .ppt
         if (
           mimeType === "application/pdf" ||
           mimeType ===
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
-          mimeType === "application/msword" ||
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || // .docx
+          mimeType === "application/msword" || // .doc (older word format, if supported)
           mimeType ===
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-          mimeType.startsWith("image/")
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation" || // .pptx
+          mimeType === "application/vnd.ms-powerpoint" // .ppt (older powerpoint format, if supported)
         ) {
           return true;
         }
-        toast.error(`File type not supported for ${file.name}.`);
+        toast.error(
+          `File type not supported for ${file.name}. Only PDF, DOCX, PPTX, and older DOC/PPT formats are allowed.`
+        );
         return false;
       });
 
       if (files.length + newFiles.length > maxFiles) {
         toast.error(`Maximum ${maxFiles} attachments allowed per session.`);
+        // Add only enough new files to reach maxFiles limit
         setFiles((prevFiles) => [
           ...prevFiles,
           ...newFiles.slice(0, maxFiles - prevFiles.length),

@@ -98,9 +98,9 @@ export function StudyToolsDisplaySection({
               Processing Status:{" "}
               <span
                 className={`font-semibold ${
-                  sessionStatus === "completed"
+                  sessionStatus === "success"
                     ? "text-green-500"
-                    : sessionStatus === "processing"
+                    : sessionStatus === "pending"
                     ? "text-blue-500 animate-pulse"
                     : sessionStatus === "failed"
                     ? "text-red-500"

@@ -1,21 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { AxiosError } from "axios";
+import { useState } from "react";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { FeatureCards } from "@/components/dashboard/feature-cards";
 import { StudyMaterialControls } from "@/components/dashboard/study-material-controls";
 import { StudyMaterialTable } from "@/components/dashboard/study-material-table";
 import { useAuth } from "@/store/useAuth";
-import { api } from "@/config/api";
-import { useUserSessions } from "@/hooks/useUserSessions"; // Import the new hook
+import { useUserSessions } from "@/hooks/useUserSessions";
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
-  const { user } = useAuth(); // User state from your auth store
+  const { user } = useAuth();
 
-  // --- New: Fetch user sessions ---
   const { sessions, isLoadingSessions, sessionsError } = useUserSessions();
 
   const userFullName =
@@ -24,35 +20,6 @@ export default function DashboardPage() {
     user?.email ||
     "Guest";
   const firstName = userFullName.split(" ")[0];
-
-  const hasFetchedProtectedData = useRef(false); // Renamed for clarity
-
-  const fetchProtectedUserData = async () => {
-    try {
-      const response = await api.get("/users/profile");
-      toast.success(`Protected data fetched! ${response.data.message}`);
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      const message =
-        err.response?.data?.message ||
-        err.message ||
-        "An unknown error occurred.";
-      toast.error(message);
-
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        // Handle re-authentication or redirection if needed
-        // Example: getAuth().signOut(); navigate("/auth/get-started");
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Only fetch protected data once per component mount, if not already fetched
-    if (!hasFetchedProtectedData.current) {
-      fetchProtectedUserData();
-      hasFetchedProtectedData.current = true;
-    }
-  }, []); // Empty dependency array means this runs once after initial render
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
@@ -65,7 +32,7 @@ export default function DashboardPage() {
             Learn smarter with the power of AI ✨
           </p>
         </div>
-        <FeatureCards /> {/* You might pass session data to this too */}
+        <FeatureCards />
         <StudyMaterialControls
           viewMode={viewMode}
           onViewChange={setViewMode}

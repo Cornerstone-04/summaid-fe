@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CloudPlus } from "@/assets/icons";
 import { useUploadDocuments } from "@/hooks/useUploadDocuments";
-import { triggerDocumentProcessing } from "@/services/documents.services";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -30,25 +29,24 @@ export default function UploadPage() {
     isLoading,
     isSuccess,
     uploadProgress,
-    data: sessionId, // This will be the sessionId returned by the hook
+    data: sessionId,
   } = useUploadDocuments();
 
   useEffect(() => {
-    const processDocuments = async () => {
+    const handlePostUploadActions = async () => {
+      // Renamed for clarity
       if (isSuccess && sessionId) {
-        try {
-          toast.loading("Processing your documents...");
-          await triggerDocumentProcessing(sessionId);
-          toast.success("Processing started!");
-          navigate(`/session/${sessionId}`);
-        } catch (err) {
-          console.error("Processing failed:", err);
-          toast.error("Failed to start processing.");
-        }
+        // The useUploadDocuments hook already handles the backend /process-documents/ call.
+        // So, we just need to confirm success and navigate.
+        toast.success("Documents uploaded and processing initiated!"); // Updated toast message
+        navigate(`/session/${sessionId}`);
       }
     };
 
-    processDocuments();
+    // Only run this effect if isSuccess changes and sessionId is available
+    if (isSuccess && sessionId) {
+      handlePostUploadActions();
+    }
   }, [isSuccess, sessionId, navigate]);
 
   const handleSubmitUpload = () => {

@@ -1,3 +1,5 @@
+// src/types/index.ts
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
@@ -9,13 +11,18 @@ export interface SessionDocument {
   user_id: string;
   files: Array<{
     fileName: string;
-    cloudStorageUrl: string;
+    cloudStorageUrl: string; // This might be redundant if Cloudinary is removed, but keeping for now.
     mimeType: string;
     size: number;
-    publicId?: string;
+    publicId?: string; // This might be redundant if Cloudinary is removed, but keeping for now.
   }>;
   preferences: {
     generateFlashcards: boolean;
+    flashcardOptions?: { // New: Optional nested object for flashcard specific preferences
+      difficulty: "easy" | "medium" | "hard";
+      numQuestions: number; // e.g., 5, 10, or 0 if disabled
+      numOptions: number;   // e.g., 4, 2, or 0 if disabled (for true/false questions)
+    };
     generateStudyGuide: boolean;
     generateSummary: boolean;
   };
@@ -31,7 +38,7 @@ export interface SessionDocument {
   total_chunks: number | null;
   successful_files: string[] | null;
   processing_errors: string[] | null;
-  title?: string; // Optional title for the session
+  title?: string;
 }
 
 export type Category =
@@ -54,32 +61,5 @@ export interface StudyMaterial {
   name: string;
   date: string;
   categories: Category[];
-  status: string; // Reflects the processing status
-}
-
-{
-  /**
-  interface SessionData {
-  id: string;
-  user_id: string;
-  files: FileDetail[];
-  preferences: {
-    generateFlashcards: boolean;
-    generateStudyGuide: boolean;
-    generateSummary: boolean;
-  };
-  created_at: string;
   status: string;
-  summary: string | null;
-  flashcards: Flashcard[];
-  study_guide: string | null;
-  chat_history: ChatMessage[];
-  error_message?: string;
-  processed_at: string | null;
-  total_text_length: number;
-  total_chunks: number;
-  successful_files: string[];
-  processing_errors: string[];
-}
-  */
 }
