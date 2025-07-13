@@ -1,4 +1,4 @@
-// src/types/index.ts
+import { MCQ } from "@/services/documents.services"; // Import MCQ interface
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -18,17 +18,18 @@ export interface SessionDocument {
   }>;
   preferences: {
     generateFlashcards: boolean;
-    flashcardOptions?: { // New: Optional nested object for flashcard specific preferences
+    flashcardOptions?: {
+      // New: Optional nested object for flashcard specific preferences
       difficulty: "easy" | "medium" | "hard";
       numQuestions: number; // e.g., 5, 10, or 0 if disabled
-      numOptions: number;   // e.g., 4, 2, or 0 if disabled (for true/false questions)
+      numOptions: number; // e.g., 4, 2, or 0 if disabled (for true/false questions)
     };
     generateStudyGuide: boolean;
     generateSummary: boolean;
   };
   status: string;
   summary: string | null;
-  flashcards: Array<{ question: string; answer: string }> | null;
+  flashcards: MCQ[] | null; // Changed to MCQ[]
   study_guide: string | null;
   chat_history: ChatMessage[] | null;
   error_message: string | null;

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export function useDeleteSession() {
   const queryClient = useQueryClient();
@@ -15,7 +16,11 @@ export function useDeleteSession() {
       return sessionId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSessions"] });
+      toast.success("Session deleted.");
+      queryClient.invalidateQueries({ queryKey: ["user-sessions"] });
+    },
+    onError: (err: Error) => {
+      toast.error(`Failed to delete session: ${err.message}`);
     },
   });
 }

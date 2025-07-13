@@ -1,4 +1,3 @@
-// src/components/session/chat-section.tsx
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
@@ -7,6 +6,7 @@ import { ContentType, SessionDocument } from "@/types";
 import { useChatStore } from "@/store/useChatStore";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { cn } from "@/lib/utils";
 
 interface ChatSectionProps {
   sessionData: SessionDocument;
@@ -14,6 +14,13 @@ interface ChatSectionProps {
   handleGenerateContent: (type: ContentType) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
+
+const generationOptions: { type: ContentType; label: string }[] = [
+  { type: "summary", label: "Summarize note" },
+  { type: "flashcards", label: "Create flashcards" },
+  { type: "studyGuide", label: "Study Guide" },
+  { type: "explain", label: "Explain more" },
+];
 
 export function ChatSection({
   sessionData,
@@ -23,6 +30,8 @@ export function ChatSection({
 }: ChatSectionProps) {
   const { messages, chatInput, setChatInput, isSendingMessage } =
     useChatStore();
+
+  const isInputDisabled = isSendingMessage || sessionData.status !== "success";
 
   return (
     <div className="flex-1 flex flex-col bg-muted/10 p-4 sm:p-6 min-h-0 h-full">
@@ -35,25 +44,37 @@ export function ChatSection({
               complete.
             </div>
           ) : (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`mb-4 p-3 rounded-lg w-fit max-w-[75%] text-sm ${
-                  message.role === "user"
-                    ? "bg-sa-primary text-white ml-auto rounded-br-none"
-                    : "bg-muted/80 text-foreground mr-auto rounded-bl-none border border-border"
-                }`}
-              >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {message.content}
-                </ReactMarkdown>
-                <span className="text-xs opacity-70 mt-1 block">
-                  {message.timestamp
-                    ? new Date(message.timestamp).toLocaleTimeString()
-                    : ""}
-                </span>
-              </div>
-            ))
+            messages.map((message, index) =>
+              message.content === "__typing__" ? (
+                <div
+                  key={`typing-${index}`}
+                  className="mb-4 p-3 rounded-lg w-fit max-w-[80%] text-xs leading-6 bg-muted/60 text-foreground mr-auto rounded-bl-none border border-border animate-pulse"
+                >
+                  <span className="opacity-60">Typing...</span>
+                </div>
+              ) : (
+                <div
+                  key={index}
+                  className={cn(
+                    "mb-4 p-3 rounded-lg w-fit max-w-[80%] text-xs leading-6",
+                    message.role === "user"
+                      ? "bg-sa-primary text-white ml-auto rounded-br-none"
+                      : "bg-muted/80 text-foreground mr-auto rounded-bl-none border border-border"
+                  )}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </ReactMarkdown>
+                  <span className="text-xs opacity-70 mt-1 block">
+                    {message.timestamp
+                      ? new Date(message.timestamp).toLocaleTimeString([], {
+                          timeStyle: "short",
+                        })
+                      : ""}
+                  </span>
+                </div>
+              )
+            )
           )}
           <div ref={messagesEndRef} />
         </CardContent>
@@ -71,35 +92,27 @@ export function ChatSection({
             }
           }}
           className="flex-1 h-[150px] text-sm resize-none pr-12 pb-[50px] pt-5 border rounded-2xl pl-4"
-          disabled={isSendingMessage || sessionData.status !== "success"}
+          disabled={isInputDisabled}
         />
+
         <Button
           size="icon"
           onClick={handleSendMessage}
-          disabled={
-            isSendingMessage ||
-            !chatInput.trim() ||
-            sessionData.status !== "success"
-          }
+          disabled={isInputDisabled || !chatInput.trim()}
           className="absolute bottom-3 right-3 flex items-center justify-center z-10"
         >
           <Send className="w-5 h-5" />
         </Button>
 
         <div className="absolute bottom-3 left-4 flex gap-3">
-          {[
-            ["summary", "Summarize note"],
-            ["flashcards", "Create flashcards"],
-            ["studyGuide", "Study Guide"],
-            ["explain", "Explain more"],
-          ].map(([type, label]) => (
+          {generationOptions.map(({ type, label }) => (
             <Button
               key={type}
               variant="outline"
               size="sm"
               className="text-[10px] xxl:text-xs rounded-[6px] border-[0.8px]"
-              onClick={() => handleGenerateContent(type as ContentType)}
-              disabled={sessionData.status !== "success" || isSendingMessage}
+              onClick={() => handleGenerateContent(type)}
+              disabled={isInputDisabled}
             >
               {label}
             </Button>

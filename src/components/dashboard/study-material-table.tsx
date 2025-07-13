@@ -61,8 +61,7 @@ export function StudyMaterialTable({
   const mapSessionToStudyMaterial = (
     session: SessionDocument
   ): StudyMaterial => {
-    const displayName =
-      session.files?.[0]?.fileName || `Session ${session.id.substring(0, 8)}`;
+    const displayName = session.title || session.id;
 
     const categories: Category[] = [];
     if (session.preferences.generateSummary) categories.push("Summary");

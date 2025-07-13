@@ -1,4 +1,5 @@
 import { api } from "@/config/api";
+import { supabase } from "@/lib/supabase";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -79,6 +80,13 @@ export const generateMCQs = async (
       payload
     );
 
+    const mcqs = response.data.mcqs;
+
+    await supabase
+      .from("sessions")
+      .update({ flashcards: mcqs })
+      .eq("id", sessionId);
+
     if (response.data && Array.isArray(response.data.mcqs)) {
       return response.data.mcqs;
     } else {
@@ -110,6 +118,11 @@ export const generateSummary = async (
       payload
     );
 
+    const summary = response.data.summary;
+
+    // Save to Supabase
+    await supabase.from("sessions").update({ summary }).eq("id", sessionId);
+
     if (response.data && typeof response.data.summary === "string") {
       return response.data.summary;
     } else {
@@ -131,6 +144,23 @@ export const getTopics = async (sessionId: string): Promise<string[]> => {
     const response = await api.get<{ topics: string[] }>(
       `/topics/${sessionId}`
     );
+    const topics = response.data.topics;
+
+    const studyGuideHtml = topics.length
+      ? `
+      <div>
+        <h2 style="margin-bottom: 0.5rem;">Study Guide Topics</h2>
+        <p>Studying the following topics should get you going:</p>
+        <ul class="list-disc ml-5 mt-2">
+          ${topics.map((t) => `<li>${t}</li>`).join("")}
+        </ul>
+      </div>`.trim()
+      : "No topics found for study guide.";
+
+    await supabase
+      .from("sessions")
+      .update({ study_guide: studyGuideHtml })
+      .eq("id", sessionId);
 
     if (response.data && Array.isArray(response.data.topics)) {
       return response.data.topics;

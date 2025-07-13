@@ -1,92 +1,62 @@
-// src/hooks/useUserSessions.ts
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/store/useAuth";
-import { toast } from "sonner";
 import { SessionDocument } from "@/types";
+import { useAuth } from "@/store/useAuth";
 
 export function useUserSessions() {
   const { user } = useAuth();
-  const [sessions, setSessions] = useState<SessionDocument[]>([]);
-  const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const channelId = `public:sessions:user_id=eq.${user?.id}`;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-
-    const fetchAndSubscribeSessions = async () => {
-      if (!user?.id) {
-        setSessions([]);
-        setIsLoadingSessions(false);
-        setSessionsError("User not authenticated.");
-        return;
-      }
-
-      setIsLoadingSessions(true);
-      setSessionsError(null);
-
+  const query = useQuery<SessionDocument[]>({
+    queryKey: ["user-sessions"],
+    queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from("sessions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching sessions:", error);
-        setSessionsError(error.message);
-        setIsLoadingSessions(false);
-        toast.error(`Failed to load study sessions: ${error.message}`);
-        return;
-      }
+      if (error) throw new Error(error.message);
+      return data as SessionDocument[];
+    },
+    enabled: !!user?.id,
+    refetchOnWindowFocus: false,
+  });
 
-      setSessions(data as SessionDocument[]);
-      setIsLoadingSessions(false);
+  useEffect(() => {
+    if (!user?.id) return;
 
-      // Setup realtime subscription
-      channel = supabase
-        .channel(channelId)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "sessions",
-            filter: `user_id=eq.${user.id}`,
-          },
-          async () => {
-            console.log("Realtime change received");
-
-            const { data: updatedData, error: updatedError } = await supabase
-              .from("sessions")
-              .select("*")
-              .eq("user_id", user.id)
-              .order("created_at", { ascending: false });
-
-            if (updatedError) {
-              console.error("Realtime fetch error:", updatedError);
-              toast.error(`Realtime update failed: ${updatedError.message}`);
-            } else {
-              setSessions(updatedData as SessionDocument[]);
-              toast.info("Study session status updated!");
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status !== "SUBSCRIBED") {
-            console.warn("Supabase subscription status:", status);
-          }
-        });
-    };
-
-    fetchAndSubscribeSessions();
+    const channelId = `public:sessions:user_id=eq.${user.id}`;
+    const channel = supabase
+      .channel(channelId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sessions",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["user-sessions"] });
+        }
+      )
+      .subscribe((status) => {
+        if (status !== "SUBSCRIBED") {
+          console.warn("Supabase subscription status:", status);
+        }
+      });
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, queryClient]);
 
-  return { sessions, isLoadingSessions, sessionsError };
+  return {
+    sessions: query.data || [],
+    isLoadingSessions: query.isLoading,
+    sessionsError: query.error?.message || null,
+  };
 }
