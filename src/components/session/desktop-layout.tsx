@@ -61,7 +61,7 @@ export function DesktopLayout({
         handleGenerateContent={handleGenerateContent}
       />
 
-      <div className="w-full md:w-[280px] lg:w-[320px] xl:w-[360px] flex-shrink-0 p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+      <div className="w-full md:w-[280px] lg:w-[320px] xl:w-[360px] flex-shrink-0 p-2 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
         <ResultsTabs sessionData={sessionData} />
       </div>
     </main>

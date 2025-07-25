@@ -4,9 +4,10 @@ import { Send, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ContentType, SessionDocument } from "@/types";
 import { useChatStore } from "@/store/useChatStore";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { cn } from "@/lib/utils";
+// import ReactMarkdown from "react-markdown";
+// import remarkGfm from "remark-gfm";
+// import { cn } from "@/lib/utils";
+import { ChatMessageItem } from "./chat-message-item";
 
 interface ChatSectionProps {
   sessionData: SessionDocument;
@@ -44,37 +45,9 @@ export function ChatSection({
               complete.
             </div>
           ) : (
-            messages.map((message, index) =>
-              message.content === "__typing__" ? (
-                <div
-                  key={`typing-${index}`}
-                  className="mb-4 p-3 rounded-lg w-fit max-w-[80%] text-xs leading-6 bg-muted/60 text-foreground mr-auto rounded-bl-none border border-border animate-pulse"
-                >
-                  <span className="opacity-60">Typing...</span>
-                </div>
-              ) : (
-                <div
-                  key={index}
-                  className={cn(
-                    "mb-4 p-3 rounded-lg w-fit max-w-[80%] text-xs leading-6",
-                    message.role === "user"
-                      ? "bg-sa-primary text-white ml-auto rounded-br-none"
-                      : "bg-muted/80 text-foreground mr-auto rounded-bl-none border border-border"
-                  )}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp
-                      ? new Date(message.timestamp).toLocaleTimeString([], {
-                          timeStyle: "short",
-                        })
-                      : ""}
-                  </span>
-                </div>
-              )
-            )
+            messages.map((message, index) => (
+              <ChatMessageItem key={index} message={message} />
+            ))
           )}
           <div ref={messagesEndRef} />
         </CardContent>

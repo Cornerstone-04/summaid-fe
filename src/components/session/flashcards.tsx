@@ -41,8 +41,11 @@ export function FlashcardQuiz({
   onCancelQuiz,
 }: FlashcardQuizProps) {
   const [quizStatus, setQuizStatus] = useState<QuizStatus>("inProgress");
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<
+    Record<number, string>
+  >({});
   const [remainingTime, setRemainingTime] = useState(5 * 60);
+  const [score, setScore] = useState<number>(0); // NEW: Add score state
   const [currentDifficulty, setCurrentDifficulty] = useState(initialDifficulty);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -71,29 +74,33 @@ export function FlashcardQuiz({
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  const handleAnswerChange = useCallback((qIndex: number, value: string) => {
-    if (quizStatus === "inProgress") {
-      setSelectedAnswers((prev) => ({ ...prev, [qIndex]: value }));
-    }
-  }, [quizStatus]);
+  const handleAnswerChange = useCallback(
+    (qIndex: number, value: string) => {
+      if (quizStatus === "inProgress") {
+        setSelectedAnswers((prev) => ({ ...prev, [qIndex]: value }));
+      }
+    },
+    [quizStatus]
+  );
 
   const handleSubmitQuiz = useCallback(() => {
     setQuizStatus("submitted");
     if (timerRef.current) clearInterval(timerRef.current);
 
-    let score = 0;
+    let calculatedScore = 0;
     quizFlashcards.forEach((fc, i) => {
-      if (selectedAnswers[i] === fc.answer) score++;
+      if (selectedAnswers[i] === fc.answer) calculatedScore++;
     });
+    setScore(calculatedScore); // NEW: Set the score in state
 
-    onQuizComplete(score, quizFlashcards.length);
+    onQuizComplete(calculatedScore, quizFlashcards.length);
   }, [quizFlashcards, selectedAnswers, onQuizComplete]);
 
-  const handleCancelQuiz = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setQuizStatus("idle");
-    onCancelQuiz();
-  }, [onCancelQuiz]);
+  const handleRetakeQuiz = useCallback(() => { // NEW: Add a retake quiz function
+    setQuizStatus("inProgress");
+    setSelectedAnswers({});
+    setRemainingTime(5 * 60); // Reset timer
+  }, []);
 
   const getOptionClass = (qIndex: number, option: string) => {
     if (quizStatus !== "submitted") return "";
@@ -117,7 +124,8 @@ export function FlashcardQuiz({
     return (
       <div className="text-muted-foreground text-center py-10">
         <Sparkles className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
-        Flashcard quiz not available. Adjust preferences or generate more questions.
+        Flashcard quiz not available. Adjust preferences or generate more
+        questions.
       </div>
     );
   }
@@ -128,12 +136,14 @@ export function FlashcardQuiz({
         <CardTitle className="text-base font-bold">{sessionTitle}</CardTitle>
         <CardDescription className="flex items-center justify-between text-muted-foreground">
           <span>
-            Quiz level: <strong>{currentDifficulty}</strong> |{" "}
-            {quizFlashcards.length} Questions | {formatTime(remainingTime)} min
+            {quizFlashcards.length} Questions <br /> {formatTime(remainingTime)}{" "}
+            min
           </span>
           <Select
             value={currentDifficulty}
-            onValueChange={(value: "easy" | "medium" | "hard") => setCurrentDifficulty(value)}
+            onValueChange={(value: "easy" | "medium" | "hard") =>
+              setCurrentDifficulty(value)
+            }
             disabled={quizStatus !== "inProgress"}
           >
             <SelectTrigger className="w-[120px] h-8 text-xs">
@@ -153,12 +163,20 @@ export function FlashcardQuiz({
         <div className="flex justify-center mb-4">
           <div
             className={`w-24 h-24 rounded-full flex items-center justify-center text-lg font-bold ${
-              remainingTime <= 60 ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"
+              remainingTime <= 60
+                ? "bg-red-100 text-red-600"
+                : "bg-green-100 text-green-600"
             }`}
           >
             {formatTime(remainingTime)}
           </div>
         </div>
+
+        {quizStatus === "submitted" && ( // NEW: Display score on top after submission
+            <div className="text-center text-xl font-bold mb-4">
+                Your Score: {score}/{quizFlashcards.length}
+            </div>
+        )}
 
         {quizFlashcards.map((flashcard, qIndex) => (
           <div key={qIndex} className="space-y-3 text-sm!">
@@ -208,15 +226,18 @@ export function FlashcardQuiz({
         ))}
       </CardContent>
 
-      <div className="p-6 pt-0 flex justify-end gap-4 border-t border-border">
+      <div className="flex justify-center gap-4">
         {quizStatus === "inProgress" && (
           <>
-            <Button variant="outline" onClick={handleCancelQuiz}>
+            <Button variant="outline" onClick={onCancelQuiz}> {/* NEW: Changed handleCancelQuiz to onCancelQuiz */}
               Cancel
             </Button>
             <Button
               onClick={handleSubmitQuiz}
-              disabled={Object.keys(selectedAnswers).length < quizFlashcards.length}
+              disabled={
+                Object.keys(selectedAnswers).length < quizFlashcards.length
+              }
+              className="bg-green-600"
             >
               Submit Quiz
             </Button>
@@ -224,7 +245,12 @@ export function FlashcardQuiz({
         )}
 
         {quizStatus === "submitted" && (
-          <Button onClick={onCancelQuiz}>Back to Results</Button>
+          <>
+            <Button variant="outline" onClick={onCancelQuiz}>
+              Back to Session
+            </Button>
+            <Button onClick={handleRetakeQuiz}>Retake Quiz</Button>
+          </>
         )}
       </div>
     </Card>
