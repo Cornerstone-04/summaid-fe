@@ -123,10 +123,10 @@ export function FlashcardQuiz({
   }
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
+    <Card className="flex flex-col h-full overflow-hidden text-sm!">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-bold">{sessionTitle}</CardTitle>
-        <CardDescription className="flex items-center justify-between text-sm text-muted-foreground">
+        <CardTitle className="text-base font-bold">{sessionTitle}</CardTitle>
+        <CardDescription className="flex items-center justify-between text-muted-foreground">
           <span>
             Quiz level: <strong>{currentDifficulty}</strong> |{" "}
             {quizFlashcards.length} Questions | {formatTime(remainingTime)} min
@@ -150,7 +150,7 @@ export function FlashcardQuiz({
       <Separator />
 
       <CardContent className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-        <div className="flex justify-center my-4">
+        <div className="flex justify-center mb-4">
           <div
             className={`w-24 h-24 rounded-full flex items-center justify-center text-lg font-bold ${
               remainingTime <= 60 ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"
@@ -161,11 +161,11 @@ export function FlashcardQuiz({
         </div>
 
         {quizFlashcards.map((flashcard, qIndex) => (
-          <div key={qIndex} className="space-y-3">
-            <h4 className="font-semibold text-base">
+          <div key={qIndex} className="space-y-3 text-sm!">
+            <h4 className="font-semibold">
               QUESTION {qIndex + 1} OF {quizFlashcards.length}
             </h4>
-            <p className="text-base">{flashcard.question}</p>
+            <p className="">{flashcard.question}</p>
             <RadioGroup
               value={selectedAnswers[qIndex] || ""}
               onValueChange={(value) => handleAnswerChange(qIndex, value)}

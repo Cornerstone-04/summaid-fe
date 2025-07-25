@@ -78,12 +78,6 @@ export function ResultsTabs({ sessionData }: ResultsTabsProps) {
   );
 
   const renderFlashcards = () => {
-    if (!sessionData.preferences.generateFlashcards) {
-      return renderPlaceholder(
-        "Flashcard generation was not enabled for this session."
-      );
-    }
-
     if (sessionData.status !== "success") {
       return renderLoading(
         "Flashcards will be available once documents are done processing."
@@ -132,9 +126,15 @@ export function ResultsTabs({ sessionData }: ResultsTabsProps) {
       className="flex flex-col flex-1 text-xs leading-6"
     >
       <TabsList className="grid w-full grid-cols-3 mb-4">
-        <TabsTrigger value="summary" className="text-xs">Summary</TabsTrigger>
-        <TabsTrigger value="flashcards" className="text-xs">Flashcards</TabsTrigger>
-        <TabsTrigger value="study-guide" className="text-xs">Study Guide</TabsTrigger>
+        <TabsTrigger value="summary" className="text-xs">
+          Summary
+        </TabsTrigger>
+        <TabsTrigger value="flashcards" className="text-xs">
+          Flashcards
+        </TabsTrigger>
+        <TabsTrigger value="study-guide" className="text-xs">
+          Study Guide
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent
