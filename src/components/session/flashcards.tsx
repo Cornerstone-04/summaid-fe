@@ -54,6 +54,19 @@ export function FlashcardQuiz({
     return shuffled.slice(0, numQuestionsToGenerate);
   }, [flashcards, numQuestionsToGenerate]);
 
+  const handleSubmitQuiz = useCallback(() => {
+    setQuizStatus("submitted");
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    let calculatedScore = 0;
+    quizFlashcards.forEach((fc, i) => {
+      if (selectedAnswers[i] === fc.answer) calculatedScore++;
+    });
+    setScore(calculatedScore); // NEW: Set the score in state
+
+    onQuizComplete(calculatedScore, quizFlashcards.length);
+  }, [quizFlashcards, selectedAnswers, onQuizComplete]);
+
   useEffect(() => {
     if (quizStatus === "inProgress" && remainingTime > 0) {
       timerRef.current = setInterval(() => {
@@ -66,7 +79,7 @@ export function FlashcardQuiz({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [quizStatus, remainingTime]);
+  }, [handleSubmitQuiz, quizStatus, remainingTime]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -82,19 +95,6 @@ export function FlashcardQuiz({
     },
     [quizStatus]
   );
-
-  const handleSubmitQuiz = useCallback(() => {
-    setQuizStatus("submitted");
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    let calculatedScore = 0;
-    quizFlashcards.forEach((fc, i) => {
-      if (selectedAnswers[i] === fc.answer) calculatedScore++;
-    });
-    setScore(calculatedScore); // NEW: Set the score in state
-
-    onQuizComplete(calculatedScore, quizFlashcards.length);
-  }, [quizFlashcards, selectedAnswers, onQuizComplete]);
 
   const handleRetakeQuiz = useCallback(() => { // NEW: Add a retake quiz function
     setQuizStatus("inProgress");
