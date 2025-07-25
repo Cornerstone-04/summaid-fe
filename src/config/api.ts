@@ -1,9 +1,10 @@
 import axios from "axios";
-import { BACKEND_URL } from "./env"; // Import the backend API URL
+// import { BACKEND_URL } from "./env"; // Import the backend API URL
 
 // Create an Axios instance with a base URL
 export const api = axios.create({
-  baseURL: BACKEND_URL,
+  // baseURL: BACKEND_URL,
+  baseURL: "/api",
   headers: {
     "Content-Type": "application/json", // Default content type for most requests
   },
