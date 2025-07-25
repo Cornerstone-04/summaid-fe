@@ -106,11 +106,13 @@ export const generateMCQs = async (
  */
 export const generateSummary = async (
   sessionId: string,
+  // userId?: string,
   query?: string
 ): Promise<string> => {
   try {
     const payload = {
       session_id: sessionId,
+        // user_id: userId, // <-- pass this if required
       ...(query && { query }),
     };
     const response = await api.post<{ summary: string }>(

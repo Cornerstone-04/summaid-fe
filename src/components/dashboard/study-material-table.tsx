@@ -15,13 +15,22 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search, MoreVertical, Pencil, Trash2, Loader2 } from "lucide-react";
+import {
+  Search,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Loader2,
+  FileText,
+  Book,
+  AlignLeft,
+} from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { JSX, useCallback, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
@@ -31,7 +40,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { studyMaterialColumns } from "./study-material-columns";
 import { Category, SessionDocument, StudyMaterial } from "@/types";
 import { useUpdateSessionTitle } from "@/hooks/useUpdateSessionTitle";
@@ -57,13 +65,40 @@ export function StudyMaterialTable({
   const updateSessionTitle = useUpdateSessionTitle();
   const deleteSession = useDeleteSession();
 
+  const categoryStyles: Record<
+    Category | "Processed" | "Pending" | "Error",
+    string
+  > = {
+    Flashcards:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+    "Study Guide":
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    Summary: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+    Processed: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+    Pending:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+    Error: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+  };
+
+  const icons: Record<
+    Category | "Processed" | "Pending" | "Error",
+    JSX.Element
+  > = {
+    Flashcards: <FileText className="h-4 w-4" />,
+    "Study Guide": <Book className="h-4 w-4" />,
+    Summary: <AlignLeft className="h-4 w-4" />,
+    Processed: <FileText className="h-4 w-4" />,
+    Pending: <FileText className="h-4 w-4" />,
+    Error: <FileText className="h-4 w-4" />,
+  };
+
   // Helper to convert SessionDocument to a format compatible with StudyMaterial
   const mapSessionToStudyMaterial = (
     session: SessionDocument
   ): StudyMaterial => {
     const displayName = session.title || session.id;
 
-    const categories: Category[] = [];
+    const categories: (Category | "Processed" | "Pending" | "Error")[] = [];
     if (session.preferences.generateSummary) categories.push("Summary");
     if (session.preferences.generateFlashcards) categories.push("Flashcards");
     if (session.preferences.generateStudyGuide) categories.push("Study Guide");
@@ -84,7 +119,7 @@ export function StudyMaterialTable({
       date: session.created_at
         ? new Date(session.created_at).toLocaleDateString()
         : "N/A",
-      categories: categories,
+      categories: categories as Category[],
       status: session.status,
     };
   };
@@ -104,17 +139,10 @@ export function StudyMaterialTable({
   const handleEdit = useCallback((material: StudyMaterial) => {
     setEditItem(material);
     setEditedTitle(material.name);
-    toast.info(
-      "Edit functionality is a placeholder. Implement Supabase update."
-    );
   }, []);
 
   const handleDelete = useCallback((material: StudyMaterial) => {
-    console.log("Delete clicked for:", material.name);
     setDeleteItem(material);
-    toast.info(
-      "Delete functionality is a placeholder. Implement Supabase delete."
-    );
   }, []);
 
   const columns = useMemo(
@@ -249,9 +277,10 @@ export function StudyMaterialTable({
                   {item.categories.map((cat, idx) => (
                     <span
                       key={idx}
-                      className="text-xs px-2 py-0.5 bg-muted rounded-full"
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${categoryStyles[cat]}`}
                     >
-                      {cat}
+                      {icons[cat]}
+                      <span className="ml-1">{cat}</span>
                     </span>
                   ))}
                 </div>
