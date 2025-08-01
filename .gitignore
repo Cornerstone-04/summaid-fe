@@ -29,3 +29,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+results.json
+shemmy.json
